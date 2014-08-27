@@ -16,11 +16,11 @@
 * GNU General Public License for more details.
 * 
 * You should have received a copy of the GNU General Public License
-* along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+* along with Synsip.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef NETWORK_H
-#define	NETWORK_H
+#ifndef CALL_MANAGER_H
+#define	CALL_MANAGER_H
 
 void make_call();
 int init_call_manager(int file);

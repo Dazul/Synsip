@@ -1,9 +1,6 @@
 /*
 * Synsip, automated calling machine working with text to speech synthesis
-* 
-* Copyright (C) 2014  EIA-FR (https://eia-fr.ch/)
-* author: Fabien Yerly
-* 
+*
 * Copyright (C) 2014  Luis Domingues
 * 
 * This file is part of Synsip.
@@ -22,23 +19,13 @@
 * along with Synsip.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SYNTHESIZE_H
-#define	SYNTHESIZE_H
+#ifndef QUEUE_H
+#define	QUEUE_H
 
-#include <iostream>
-#include <stdlib.h>
-#include <stdio.h>
-
-class Synthesis_manager {
-public:
-    Synthesis_manager();
-    virtual ~Synthesis_manager();
-    
-    int synthesired(char* message);
-    
-private:
-
-};
-
-#endif	/* SYNTHESIZE_H */
-
+void init_queue(int size);
+void destroy_queue();
+int is_full();
+int is_empty();
+void add_element(void* elm);
+void remove_element(void* elm);
+#endif

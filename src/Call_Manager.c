@@ -16,10 +16,11 @@
 * GNU General Public License for more details.
 * 
 * You should have received a copy of the GNU General Public License
-* along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+* along with Synsip.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "Call_Manager.h"
+#include "queue.h"
 
 #include <pjsua-lib/pjsua.h>
 #include <pjmedia.h>
@@ -30,6 +31,7 @@
 #include <semaphore.h>
 #include <errno.h>
 #include <time.h>
+#include <pthread.h>
 
 #define THIS_FILE	"Call_Manager"
 
@@ -47,6 +49,36 @@ struct pjsua_player_eof_data
 
 FILE *stream;
 sem_t wait_start_call;
+sem_t wait_destroy_player;
+pthread_t destroy_thread;
+
+static void *destroy_players(void *args)
+{
+	void *msg;
+	pj_thread_t *pj_thread;
+	pj_thread_desc desc;
+	pj_status_t status;
+	status = pj_thread_register("Destroy thread", desc, &pj_thread);
+	if(status == PJ_SUCCESS){
+		printf("********************************Registration succeed\n");
+	} else {
+		printf("********************************Registration failed\n");
+	}
+	printf("**********************************Thread started\n");
+	while(1)
+	{
+		printf("**********************************Thread waiting\n");
+		sem_wait(&wait_destroy_player);
+		printf("**********************************Thread continue\n");
+		remove_element(msg);
+    	struct pjsua_player_eof_data *eof_data = (struct pjsua_player_eof_data *)msg;
+		//status = pjsua_call_hangup(eof_data->call_id, 0, NULL, NULL);
+    	status = pjsua_player_destroy(eof_data->player_id);
+    	printf("**********************************Thread continue2\n");
+    	pj_pool_release(eof_data->pool);
+    	printf("**********************************Destroying player\n");
+	}
+}
 
 /* Util to display the error message for the specified error code  */
 static int app_perror( const char *sender, const char *title, 
@@ -62,7 +94,14 @@ static int app_perror( const char *sender, const char *title,
 
 static PJ_DEF(pj_status_t) on_pjsua_wav_file_end_callback(pjmedia_port* media_port, void* args)
 {
-    pj_status_t status;
+	pj_status_t status;
+	add_element(args);
+	struct pjsua_player_eof_data *eof_data = (struct pjsua_player_eof_data *)args;
+	status = pjsua_call_hangup(eof_data->call_id, 0, NULL, NULL);
+	printf("**********************************Releasing thread\n");
+	sem_post(&wait_destroy_player);
+	printf("**********************************Thread released\n");
+    /*pj_status_t status;
     struct pjsua_player_eof_data *eof_data = (struct pjsua_player_eof_data *)args;
 	
 	status = pjsua_call_hangup(eof_data->call_id, 0, NULL, NULL);
@@ -78,7 +117,8 @@ static PJ_DEF(pj_status_t) on_pjsua_wav_file_end_callback(pjmedia_port* media_po
                   //Check link below
     }
 
-    return PJ_SUCCESS;
+    return PJ_SUCCESS;*/
+    return -1;
 }
 
 /* Play the file after the call */
@@ -248,6 +288,7 @@ int init_call_manager(int file)
 	    cfg.cb.on_incoming_call = &on_incoming_call;
 	    cfg.cb.on_call_media_state = &on_call_media_state;
 	    cfg.cb.on_call_state = &on_call_state;
+	    cfg.thread_cnt = 2;
 
 	    pjsua_logging_config_default(&log_cfg);
 	    log_cfg.console_level = 1;
@@ -294,7 +335,10 @@ int init_call_manager(int file)
     }
     //sleep(5);
     //make_call("sip:81@192.168.0.2");
+    init_queue(50);
     sem_init(&wait_start_call, 0, 0);
+    sem_init(&wait_destroy_player, 0, 0);
+    pthread_create(&destroy_thread, NULL, &destroy_players, NULL);
     /* Wait until user press "q" to quit. */
     stream = fdopen (file, "r");
     char bufMsg[BUFFER_SIZE];
@@ -331,6 +375,8 @@ int init_call_manager(int file)
 //        continue;
         make_call(bufMsg, bufNum);
     }
+    pthread_cancel(destroy_thread);
+    destroy_queue();
     fclose (stream);
     pjsua_destroy();
     return 0;

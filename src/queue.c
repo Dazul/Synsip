@@ -1,9 +1,6 @@
 /*
 * Synsip, automated calling machine working with text to speech synthesis
-* 
-* Copyright (C) 2014  EIA-FR (https://eia-fr.ch/)
-* author: Fabien Yerly
-* 
+*
 * Copyright (C) 2014  Luis Domingues
 * 
 * This file is part of Synsip.
@@ -22,23 +19,55 @@
 * along with Synsip.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SYNTHESIZE_H
-#define	SYNTHESIZE_H
-
-#include <iostream>
+#include "queue.h"
 #include <stdlib.h>
-#include <stdio.h>
 
-class Synthesis_manager {
-public:
-    Synthesis_manager();
-    virtual ~Synthesis_manager();
-    
-    int synthesired(char* message);
-    
-private:
+void **my_array;
+int queue_size;
+int used_size;
+int next_put;
+int next_get;
 
-};
+void init_queue(int size)
+{
+	queue_size = size;
+	next_put = 0;
+	next_get = 0;
+	used_size = 0;
+	my_array = malloc(sizeof(void*) * size);
+}
 
-#endif	/* SYNTHESIZE_H */
+void destroy_queue()
+{
+	free(my_array);
+}
 
+int is_full()
+{
+	if(used_size == queue_size){
+		return 1;
+	}
+	return 0;
+}
+
+int is_empty()
+{
+	if(used_size == 0){
+		return 1;
+	}
+	return 0;
+}
+
+void add_element(void* elm)
+{
+	used_size++;
+	my_array[next_put] = elm;
+	next_put = (next_put + 1) % queue_size;
+}
+
+void remove_element(void* elm)
+{
+	used_size--;
+	my_array[next_get] = elm;
+	next_get = (next_get + 1) % queue_size;
+}
