@@ -226,7 +226,7 @@ void make_call(char *msgFile, char *num)
     	pjsua_call_hangup(call_id, 0, NULL, NULL);
     	return;
     }
-    sleep(2);
+    sleep(1);
 
     play_file(call_id, msgFile);
 }
