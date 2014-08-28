@@ -22,7 +22,5 @@
 #ifndef CALL_MANAGER_H
 #define	CALL_MANAGER_H
 
-void make_call();
 int init_call_manager(int file);
-void destroy();
 #endif

@@ -65,9 +65,11 @@ void add_element(void* elm)
 	next_put = (next_put + 1) % queue_size;
 }
 
-void remove_element(void* elm)
+void* remove_element()
 {
+	void* elm;
 	used_size--;
-	my_array[next_get] = elm;
+	elm = my_array[next_get];
 	next_get = (next_get + 1) % queue_size;
+	return elm;
 }

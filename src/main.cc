@@ -23,6 +23,7 @@
 */
 
 #include <iostream>
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>    //strlen
 #include <stdlib.h>    //strlen
@@ -40,17 +41,37 @@ using namespace std;
 
 extern "C"{
     int init_call_manager(int file);
-    void call_manager_destroy();
 }
 
 Network_manager *network;
 
 void sigHandler(int sig){
-    printf("Interupt Signal received Parent\n");
+    cout << "Interupt Signal received by parent" << endl;
     delete network;
 }
 
+void print_license() {
+	cout << "Synsip 0.1.0\n"
+"Copyright (C) 2014  EIA-FR (https://eia-fr.ch/)\n"
+"Copyright (C) 2014  Luis Domingues\n"
+"This is free software; see the source for copying conditions.  There is NO\n"
+"warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
+"Written by Fabien Yerly and Luis Domingues\n";
+}
+
 int main(int argc, char** argv) {
+	
+	int c;
+	while ((c = getopt (argc, argv, "v")) != -1)
+		switch (c) {
+			case 'v':
+				print_license();
+				return 0;
+				break;
+			default:
+				continue;
+		}	
+	
     cout << "Start program" << endl;
     pid_t pid;
     int mypipe[2];
@@ -79,16 +100,6 @@ int main(int argc, char** argv) {
             if (!network->waitMessage()) {
                 cout << "Waiting message error" << endl;
             }
-            /*
-            string msg = "Voie, une, entrée du train, Amtrak. Ce train dessert, Chablais-City, la Prairie. Départ 12 heure 34.";
-
-            char *message = new char[msg.size() + 1];
-            copy(msg.begin(), msg.end(), message);
-
-            synthesize.synthesired(message);
-
-            */
-            //if (network.closeConnection()) cout << "Connection close" << endl;
         } else {
             cout << "Cannot create connection" << endl;
         }

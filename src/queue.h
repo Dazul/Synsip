@@ -27,5 +27,5 @@ void destroy_queue();
 int is_full();
 int is_empty();
 void add_element(void* elm);
-void remove_element(void* elm);
+void* remove_element();
 #endif

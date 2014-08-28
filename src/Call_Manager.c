@@ -52,34 +52,6 @@ sem_t wait_start_call;
 sem_t wait_destroy_player;
 pthread_t destroy_thread;
 
-static void *destroy_players(void *args)
-{
-	void *msg;
-	pj_thread_t *pj_thread;
-	pj_thread_desc desc;
-	pj_status_t status;
-	status = pj_thread_register("Destroy thread", desc, &pj_thread);
-	if(status == PJ_SUCCESS){
-		printf("********************************Registration succeed\n");
-	} else {
-		printf("********************************Registration failed\n");
-	}
-	printf("**********************************Thread started\n");
-	while(1)
-	{
-		printf("**********************************Thread waiting\n");
-		sem_wait(&wait_destroy_player);
-		printf("**********************************Thread continue\n");
-		remove_element(msg);
-    	struct pjsua_player_eof_data *eof_data = (struct pjsua_player_eof_data *)msg;
-		//status = pjsua_call_hangup(eof_data->call_id, 0, NULL, NULL);
-    	status = pjsua_player_destroy(eof_data->player_id);
-    	printf("**********************************Thread continue2\n");
-    	pj_pool_release(eof_data->pool);
-    	printf("**********************************Destroying player\n");
-	}
-}
-
 /* Util to display the error message for the specified error code  */
 static int app_perror( const char *sender, const char *title, 
 		       pj_status_t status)
@@ -88,36 +60,42 @@ static int app_perror( const char *sender, const char *title,
 
     pj_strerror(status, errmsg, sizeof(errmsg));
 
-    PJ_LOG(3,(sender, "%s: %s [code=%d]", title, errmsg, status));
+    PJ_LOG(2,(sender, "%s: %s [code=%d]", title, errmsg, status));
     return 1;
 }
 
+/* Function who destroy the players, in another thread. */
+static void *destroy_players(void *args)
+{
+	void *msg;
+	pj_thread_t *pj_thread;
+	pj_thread_desc desc;
+	pj_status_t status;
+	status = pj_thread_register("Destroy thread", desc, &pj_thread);
+	if(status != PJ_SUCCESS){
+		app_perror(THIS_FILE, "Unable to register thread", status);
+	}
+	while(1)
+	{
+		sem_wait(&wait_destroy_player);
+		msg = remove_element();
+    	struct pjsua_player_eof_data *eof_data = (struct pjsua_player_eof_data *)msg;
+		status = pjsua_call_hangup(eof_data->call_id, 0, NULL, NULL);
+    	status = pjsua_player_destroy(eof_data->player_id);
+    	pj_pool_release(eof_data->pool);
+    	free(msg);
+	}
+}
+
+/* Put the player_id on a queue to be destroy by another thread */
 static PJ_DEF(pj_status_t) on_pjsua_wav_file_end_callback(pjmedia_port* media_port, void* args)
 {
 	pj_status_t status;
-	add_element(args);
+	struct pjsua_player_eof_data *arg_queue = malloc(sizeof(struct pjsua_player_eof_data));
 	struct pjsua_player_eof_data *eof_data = (struct pjsua_player_eof_data *)args;
-	status = pjsua_call_hangup(eof_data->call_id, 0, NULL, NULL);
-	printf("**********************************Releasing thread\n");
+	*arg_queue = *eof_data;
+	add_element(arg_queue);
 	sem_post(&wait_destroy_player);
-	printf("**********************************Thread released\n");
-    /*pj_status_t status;
-    struct pjsua_player_eof_data *eof_data = (struct pjsua_player_eof_data *)args;
-	
-	status = pjsua_call_hangup(eof_data->call_id, 0, NULL, NULL);
-    status = pjsua_player_destroy(eof_data->player_id);
-    pj_pool_release(eof_data->pool);
-    sleep(2);
-
-    PJ_LOG(1,(THIS_FILE, "End of Wav File, media_port: %d", media_port));
-
-    if (status == PJ_SUCCESS)
-    {
-        return -1;//Here it is important to return value other than PJ_SUCCESS
-                  //Check link below
-    }
-
-    return PJ_SUCCESS;*/
     return -1;
 }
 
@@ -183,9 +161,7 @@ static void on_incoming_call(pjsua_acc_id acc_id, pjsua_call_id call_id,
     PJ_LOG(1,(THIS_FILE, "Incoming call from %.*s!!",
 			 (int)ci.remote_info.slen,
 			 ci.remote_info.ptr));
-    //printf("*************ID is %d\n", ci.media[0].stream.aud.conf_slot);
     pjsua_conf_port_id conf_port = pjsua_call_get_conf_port(call_id);
-    //printf("*************ID is %d\n", conf_port);
 
     /* Automatically answer incoming calls with 200/OK */
     pjsua_call_answer(call_id, 200, NULL, NULL);
@@ -205,11 +181,6 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
     PJ_LOG(1,(THIS_FILE, "Call %d state=%.*s", call_id,
 			 (int)ci.state_text.slen,
 			 ci.state_text.ptr));
-    if(ci.state == PJSIP_INV_STATE_CONFIRMED) {
-        //sem_post(&wait_start_call);
-    } else if(ci.state == PJSIP_INV_STATE_DISCONNECTED) {
-    	//sem_post(&wait_start_call);
-    }
 }
 
 /* Callback called by the library when call's media state has changed */
@@ -219,9 +190,7 @@ static void on_call_media_state(pjsua_call_id call_id)
 
     pjsua_call_get_info(call_id, &ci);
     if (ci.media_status == PJSUA_CALL_MEDIA_ACTIVE) {
-		// When media is active, connect call to sound device.
-		//pjsua_conf_connect(ci.conf_slot, 0);
-		//pjsua_conf_connect(0, ci.conf_slot);
+		// When media is active, release the player for the file.
 		sem_post(&wait_start_call);
     }
 }
@@ -248,23 +217,15 @@ void make_call(char *msgFile, char *num)
     
     pjsua_call_info ci;
 
-    /*do{
-        pjsua_call_get_info(call_id, &ci);
-        //printf("The call state is: %s\n", ci.state_text.ptr);
-        sleep(1);
-    }while(ci.last_status ==  PJSIP_SC_RINGING);*/
-    printf("************Wait\n");
-    //sem_wait(&wait_start_call);
     clock_gettime(CLOCK_REALTIME, &timeout);
     timeout.tv_sec += 20;
     timeout.tv_nsec = 0;
     sem_timedwait(&wait_start_call, &timeout);
     if(errno == ETIMEDOUT){
-    	printf("************Time out\n");
+    	PJ_LOG(1,(THIS_FILE, "Time out!"));
     	pjsua_call_hangup(call_id, 0, NULL, NULL);
     	return;
     }
-    printf("************Continue\n");
     sleep(2);
 
     play_file(call_id, msgFile);
@@ -369,9 +330,9 @@ int init_call_manager(int file)
             printf("Receive a q\n");
             break;
         }
-        printf("*********************************************************\n");
+        /*printf("*********************************************************\n");
         printf("Phone number: %s\n", bufNum);
-        printf("Message: %s\n", bufMsg);
+        printf("Message: %s\n", bufMsg);*/
 //        continue;
         make_call(bufMsg, bufNum);
     }
@@ -380,9 +341,4 @@ int init_call_manager(int file)
     fclose (stream);
     pjsua_destroy();
     return 0;
-}
-
-void call_manager_destroy(){
-    fclose (stream);
-    pjsua_destroy();
 }
