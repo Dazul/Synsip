@@ -50,6 +50,7 @@ struct pjsua_player_eof_data
 FILE *stream;
 sem_t wait_start_call;
 sem_t wait_destroy_player;
+sem_t wait_two_calls;
 pthread_t destroy_thread;
 
 /* Util to display the error message for the specified error code  */
@@ -84,6 +85,8 @@ static void *destroy_players(void *args)
     	status = pjsua_player_destroy(eof_data->player_id);
     	pj_pool_release(eof_data->pool);
     	free(msg);
+    	sleep(2);
+    	sem_post(&wait_two_calls);
 	}
 }
 
@@ -224,6 +227,7 @@ void make_call(char *msgFile, char *num)
     if(errno == ETIMEDOUT){
     	PJ_LOG(1,(THIS_FILE, "Time out!"));
     	pjsua_call_hangup(call_id, 0, NULL, NULL);
+    	sem_post(&wait_two_calls);
     	return;
     }
     sleep(1);
@@ -286,7 +290,6 @@ int init_call_manager(int file)
 	    cfg.reg_uri = pj_str("sip:" SIP_DOMAIN);
 	    cfg.cred_count = 1;
 	    cfg.cred_info[0].realm = pj_str("*");
-	    //cfg.cred_info[0].scheme = pj_str("*");
 	    cfg.cred_info[0].username = pj_str(SIP_USER);
 	    cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
 	    cfg.cred_info[0].data = pj_str(SIP_PASSWD);
@@ -294,20 +297,20 @@ int init_call_manager(int file)
 	    status = pjsua_acc_add(&cfg, PJ_TRUE, &acc_id);
 	    if (status != PJ_SUCCESS) error_exit("Error adding account", status);
     }
-    //sleep(5);
-    //make_call("sip:81@192.168.0.2");
     init_queue(50);
     sem_init(&wait_start_call, 0, 0);
     sem_init(&wait_destroy_player, 0, 0);
+    sem_init(&wait_two_calls, 0, 2);
     pthread_create(&destroy_thread, NULL, &destroy_players, NULL);
     /* Wait until user press "q" to quit. */
     stream = fdopen (file, "r");
     char bufMsg[BUFFER_SIZE];
     char bufNum[BUFFER_SIZE];
-    for (;;) {
+    while(1) {
         char c;
         int i = 0;
         int isNum = 0;
+        sem_wait(&wait_two_calls);
         while((c=getc(stream)) != '\n'){
             if(c == '|'){
                 isNum = 1;
@@ -330,9 +333,9 @@ int init_call_manager(int file)
             printf("Receive a q\n");
             break;
         }
-        /*printf("*********************************************************\n");
+        printf("*********************************************************\n");
         printf("Phone number: %s\n", bufNum);
-        printf("Message: %s\n", bufMsg);*/
+        printf("Message: %s\n", bufMsg);
 //        continue;
         make_call(bufMsg, bufNum);
     }

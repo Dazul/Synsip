@@ -33,11 +33,12 @@ using namespace std;
 
 Synthesis_manager::Synthesis_manager() {
     cout << "Create synthesize" << endl;
+    srand (time(NULL));
 }
 
 int Synthesis_manager::synthesired(char* annonce) { // message=0x7ffff6fd4d90 \"message test\\r\\n\"
     cout << annonce << endl;
-    int fileName = time(NULL);
+    int fileName = rand() % 100 + 1;;
     char ordner[] = "/home/synsip";
 
     // Text file
