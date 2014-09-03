@@ -35,10 +35,15 @@
 
 #define THIS_FILE	"Call_Manager"
 
-#define SIP_DOMAIN	"192.168.1.190"
+#define SIP_DOMAIN	"192.168.1.127"
 #define SIP_USER	"91"
 #define SIP_PASSWD	"secret"
 #define BUFFER_SIZE 255
+
+/*#define SIP_DOMAIN	"192.168.0.2"
+#define SIP_USER	"82"
+#define SIP_PASSWD	"8282"
+#define BUFFER_SIZE 255*/
 
 struct pjsua_player_eof_data
 {
@@ -167,9 +172,9 @@ static void on_incoming_call(pjsua_acc_id acc_id, pjsua_call_id call_id,
     pjsua_conf_port_id conf_port = pjsua_call_get_conf_port(call_id);
 
     /* Automatically answer incoming calls with 200/OK */
-    pjsua_call_answer(call_id, 200, NULL, NULL);
+    //pjsua_call_answer(call_id, 200, NULL, NULL);
     
-    play_file(call_id, NULL);
+    //play_file(call_id, NULL);
 
 }
 
@@ -267,7 +272,9 @@ int init_call_manager(int file)
 	    pjsua_transport_config cfg;
 
 	    pjsua_transport_config_default(&cfg);
-	    cfg.port = 5060;
+	    //cfg.port = 5061;
+	    cfg.bound_addr.ptr = "192.168.1.127";
+	    cfg.bound_addr.slen = 13;
 	    status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, NULL);
 	    if (status != PJ_SUCCESS) error_exit("Error creating transport", status);
     }
@@ -286,8 +293,8 @@ int init_call_manager(int file)
 	    pjsua_acc_config cfg;
 
 	    pjsua_acc_config_default(&cfg);
-	    cfg.id = pj_str("sip:" SIP_USER "@" SIP_DOMAIN);
-	    cfg.reg_uri = pj_str("sip:" SIP_DOMAIN);
+	    cfg.id = pj_str("sip:" SIP_USER "@" SIP_DOMAIN ":5061");
+	    cfg.reg_uri = pj_str("sip:" SIP_DOMAIN ":5061");
 	    cfg.cred_count = 1;
 	    cfg.cred_info[0].realm = pj_str("*");
 	    cfg.cred_info[0].username = pj_str(SIP_USER);
