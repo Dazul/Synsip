@@ -70,6 +70,8 @@ void Message_manager::generateMessage(int size, char* msg) {
     }
     else {
         sprintf(message, "_");
+        printf("Bad Message\n");
+        return;
     }
 
     //}
@@ -90,7 +92,7 @@ void Message_manager::generateMessage(int size, char* msg) {
     strcat(msgChar,".wav");
     strcat(msgChar,"|sip:");
     strcat(msgChar, annonce[1]);
-    strcat(msgChar,"@192.168.1.127:5061\n\0");
+    strcat(msgChar,"@192.168.1.127\n\0");
     fprintf (stream, "%s", msgChar);
     fflush(stream);
 }

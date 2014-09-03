@@ -34,57 +34,60 @@ using namespace std;
 
 void* Network_manager::run() {
     
-    //Listen
-    listen(socket_desc, 3);
+    while(true){
+    	//Listen
+    	listen(socket_desc, 3);
+	
+    	//Accept and incoming connection
+    	puts("Waiting for incoming connections...");
+    	c = sizeof (struct sockaddr_in);
 
-    //Accept and incoming connection
-    puts("Waiting for incoming connections...");
-    c = sizeof (struct sockaddr_in);
+		client_sock = accept(socket_desc, (struct sockaddr *) &client, (socklen_t*) & c);
+		puts("Connection accepted");
 
-    client_sock = accept(socket_desc, (struct sockaddr *) &client, (socklen_t*) & c);
-    puts("Connection accepted");
+		//Now join the thread , so that we dont terminate before the thread
+		//pthread_join( thread_id , NULL);
 
-    //Now join the thread , so that we dont terminate before the thread
-    //pthread_join( thread_id , NULL);
-
-    puts(inet_ntoa(client.sin_addr));
+		puts(inet_ntoa(client.sin_addr));
 
 
-    if (client_sock < 0) {
-        perror("accept failed");
-        return NULL;
-    }
+		if (client_sock < 0) {
+		    perror("accept failed");
+		    return NULL;
+		}
 
-    char returnMessage[] = {"Connection to server ready\n"};
-    write(client_sock, returnMessage, strlen(returnMessage));
+		char returnMessage[] = {"Connection to server ready\n"};
+		write(client_sock, returnMessage, strlen(returnMessage));
 
-    int read_size;
-    char automate_message[256];
+		int read_size;
+		char automate_message[256];
+		memset(automate_message, 0, 256);
+		//Receive a message from client
+		while (true) {
 
-    //Receive a message from client
-    while (true) {
+		    read_size = read(client_sock, automate_message, sizeof(automate_message));
+		    if (read_size > 0) {
+		        //call the message generator
+		        message_manager->generateMessage(read_size, automate_message);
+				cout << "Received message: " << automate_message << endl;
+				if(strcmp(automate_message, "exit") == 0){
+					cout << "Detach" << endl;
+		        	this->detach();
+		    	}
+			
+		        //clear the message buffer
+		        memset(automate_message, 0, 256);
+		    }
+		    if (read_size == 0) {
+		        puts("Client disconnected");
+		        break;
+		    } else if (read_size == -1) {
+		        puts("No message");
+		        return NULL;
+		    }
 
-        read_size = read(client_sock, automate_message, sizeof(automate_message));
-        if (read_size > 0) {
-            //call the message generator
-            message_manager->generateMessage(read_size, automate_message);
-
-            //clear the message buffer
-            memset(automate_message, 0, 256);
-        }
-        if(automate_message == "exit"){
-            this->detach();
-        }
-
-        if (read_size == 0) {
-            puts("Client disconnected");
-            break;
-        } else if (read_size == -1) {
-            puts("No message");
-            return NULL;
-        }
-
-    }
+		}
+	}
     return NULL;
 }
 

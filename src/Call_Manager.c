@@ -272,9 +272,9 @@ int init_call_manager(int file)
 	    pjsua_transport_config cfg;
 
 	    pjsua_transport_config_default(&cfg);
-	    //cfg.port = 5061;
-	    cfg.bound_addr.ptr = "192.168.1.127";
-	    cfg.bound_addr.slen = 13;
+	    cfg.port = 5061;
+	    //cfg.bound_addr.ptr = "192.168.1.127";
+	    //cfg.bound_addr.slen = 13;
 	    status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, NULL);
 	    if (status != PJ_SUCCESS) error_exit("Error creating transport", status);
     }
@@ -293,8 +293,8 @@ int init_call_manager(int file)
 	    pjsua_acc_config cfg;
 
 	    pjsua_acc_config_default(&cfg);
-	    cfg.id = pj_str("sip:" SIP_USER "@" SIP_DOMAIN ":5061");
-	    cfg.reg_uri = pj_str("sip:" SIP_DOMAIN ":5061");
+	    cfg.id = pj_str("sip:" SIP_USER "@" SIP_DOMAIN);
+	    cfg.reg_uri = pj_str("sip:" SIP_DOMAIN);
 	    cfg.cred_count = 1;
 	    cfg.cred_info[0].realm = pj_str("*");
 	    cfg.cred_info[0].username = pj_str(SIP_USER);
