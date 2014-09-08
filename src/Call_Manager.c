@@ -35,7 +35,7 @@
 
 #define THIS_FILE	"Call_Manager"
 
-#define SIP_DOMAIN	"192.168.1.127"
+#define SIP_DOMAIN	"192.168.0.35"
 #define SIP_USER	"91"
 #define SIP_PASSWD	"secret"
 #define BUFFER_SIZE 255
@@ -331,18 +331,18 @@ int init_call_manager(int file)
                 bufMsg[i++] = c;
             }
             if((i+1) == BUFFER_SIZE){
-                printf("Buffer size exceded\n");
+                PJ_LOG(1,(THIS_FILE, "Buffer size exceded"));
                 break;
             }
         }
         bufNum[i] = '\0';
         if(bufMsg[0] == 'q'){
-            printf("Receive a q\n");
             break;
         }
-        printf("*********************************************************\n");
+        //TODO Debug
+        /*printf("*********************************************************\n");
         printf("Phone number: %s\n", bufNum);
-        printf("Message: %s\n", bufMsg);
+        printf("Message: %s\n", bufMsg);*/
 //        continue;
         make_call(bufMsg, bufNum);
     }

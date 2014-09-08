@@ -39,20 +39,20 @@ void* Network_manager::run() {
     	listen(socket_desc, 3);
 	
     	//Accept and incoming connection
-    	puts("Waiting for incoming connections...");
+    	syslog(LOG_INFO, "Waiting for incoming connections...");
     	c = sizeof (struct sockaddr_in);
 
 		client_sock = accept(socket_desc, (struct sockaddr *) &client, (socklen_t*) & c);
-		puts("Connection accepted");
+		syslog(LOG_INFO, "Connection accepted from %s", inet_ntoa(client.sin_addr));
 
 		//Now join the thread , so that we dont terminate before the thread
 		//pthread_join( thread_id , NULL);
 
-		puts(inet_ntoa(client.sin_addr));
+		//puts(inet_ntoa(client.sin_addr));
 
 
 		if (client_sock < 0) {
-		    perror("accept failed");
+		    syslog(LOG_ERR, "accept failed");
 		    return NULL;
 		}
 
@@ -69,20 +69,20 @@ void* Network_manager::run() {
 		    if (read_size > 0) {
 		        //call the message generator
 		        message_manager->generateMessage(read_size, automate_message);
-				cout << "Received message: " << automate_message << endl;
+				/*cout << "Received message: " << automate_message << endl;
 				if(strcmp(automate_message, "exit") == 0){
 					cout << "Detach" << endl;
 		        	this->detach();
-		    	}
+		    	}*/
 			
 		        //clear the message buffer
 		        memset(automate_message, 0, 256);
 		    }
 		    if (read_size == 0) {
-		        puts("Client disconnected");
+    			syslog(LOG_INFO, "Client disconnected");
 		        break;
 		    } else if (read_size == -1) {
-		        puts("No message");
+		        //puts("No message");
 		        return NULL;
 		    }
 
@@ -92,7 +92,8 @@ void* Network_manager::run() {
 }
 
 Network_manager::Network_manager(int file) {
-    cout << "Network create" << endl;
+    //TODO Debug
+    //cout << "Network create" << endl;
     port = 7801;
     canReceivce = true;
     message_manager = new Message_manager(file);
@@ -103,9 +104,10 @@ bool Network_manager::createConnection() {
     //Create socket
     socket_desc = socket(AF_INET, SOCK_STREAM, 0);
     if (socket_desc == -1) {
-        printf("Could not create socket");
+        //printf("Could not create socket");
     }
-    puts("Socket created");
+    //TODO Debug
+    //puts("Socket created");
 
     //Prepare the sockaddr_in structure
     server.sin_family = AF_INET;
@@ -115,10 +117,11 @@ bool Network_manager::createConnection() {
     //Bind
     if (bind(socket_desc, (struct sockaddr *) &server, sizeof (server)) < 0) {
         //print the error message
-        perror("bind failed. Error");
+        syslog(LOG_ERR, "bind failed. Error");
         return false;
     }
-    puts("bind done");
+    //TODO Debug
+    //puts("bind done");
 
     return true;
 }
@@ -130,10 +133,6 @@ bool Network_manager::waitMessage() {
 
 }
 
-void Network_manager::callCreateMessage(char* msg) {
-    cout << msg << endl;
-}
-
 bool Network_manager::closeConnection() {
     close(socket_desc);
     close(client_sock);
@@ -143,7 +142,7 @@ bool Network_manager::closeConnection() {
 }
 
 Network_manager::~Network_manager() {
-    cout << "Deleting Network Manager" << endl;
+    syslog(LOG_ERR, "Deleting Network Manager");
     closeConnection();
     delete message_manager;
 }

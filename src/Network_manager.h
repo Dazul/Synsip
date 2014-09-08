@@ -28,7 +28,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/types.h>
-#include <pjlib.h>
+#include <syslog.h>
 
 #include "Thread.h"
 #include "Message_manager.h"
@@ -47,7 +47,6 @@ public:
     bool canReceivce;
 
 private:
-    void callCreateMessage(char * msg);
     int socket_desc, client_sock, c;
     struct sockaddr_in server, client;
     int port;

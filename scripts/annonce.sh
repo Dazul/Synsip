@@ -24,7 +24,6 @@
 #
 ###########################################################################
 
-echo $(cat $2/$1)
-espeak -a 20 -p 50 -s 120 -v mb/mb-fr4 "$(cat $2/$1)" --pho --phonout=$2/$1.pho
-mbrola /usr/share/mbrola/voices/fr4 $2/$1.pho $2/$1.voice.wav
-sox $2/intro.wav $2/$1.voice.wav $2/$1.wav
+espeak -a 20 -p 50 -s 120 -v mb/mb-fr4 "$(cat $2/$1)" --pho --phonout=$2/$1.pho 2> /dev/null
+mbrola /usr/share/mbrola/voices/fr4 $2/$1.pho $2/$1.voice.wav 2> /dev/null
+sox $2/intro.wav $2/$1.voice.wav $2/$1.wav 2> /dev/null

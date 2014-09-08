@@ -32,27 +32,26 @@
 using namespace std;
 
 Synthesis_manager::Synthesis_manager() {
-    cout << "Create synthesize" << endl;
+    //cout << "Create synthesize" << endl;
     srand (time(NULL));
 }
 
 int Synthesis_manager::synthesired(char* annonce) { // message=0x7ffff6fd4d90 \"message test\\r\\n\"
-    cout << annonce << endl;
     int fileName = rand() % 100 + 1;;
     char ordner[] = "/home/synsip";
 
     // Text file
     char commandefile[sizeof (annonce) + 256];
     sprintf(commandefile, "echo \"%s\" > /%s/%d", annonce, ordner, fileName); // generate command
-    cout << commandefile << endl;
+    //cout << commandefile << endl;
     system(commandefile); // execute command
 
-
+	
     char script[256];
     sprintf(script, "%s/annonce.sh %d %s", ordner, fileName, ordner);
 
 
-    cout << "commande : " << script << endl;
+    //cout << "commande : " << script << endl;
 
     system(script);
     //system("echo message > text.txt");

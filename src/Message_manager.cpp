@@ -33,9 +33,7 @@ Message_manager::Message_manager(int file) {
 
 void Message_manager::generateMessage(int size, char* msg) {
 
-    //char msg[] = "1;20;une;Amtrak;chablais-city;12 heure 34;20.06.2014-10:00;message";
-
-    cout << "Create new message" << endl << endl;
+    //cout << "Create new message" << endl << endl;
 
     char* token;
     token = strtok(msg, "|");
@@ -44,7 +42,7 @@ void Message_manager::generateMessage(int size, char* msg) {
     int i = 0;
     do {
         annonce[i] = token;
-        printf("-%s\n", token);
+        //printf("-%s\n", token);
         token = strtok(NULL, "|");
         i++;
     } while(token != NULL);
@@ -52,7 +50,7 @@ void Message_manager::generateMessage(int size, char* msg) {
     char message[256];
 
     if (strcmp(annonce[0], "1") == 0) { // message type 1
-        cout << "Type 1" << endl;
+        //cout << "Type 1" << endl;
         sprintf(message, "%s", annonce[3]);
     } 
     else if (strcmp(annonce[0], "2") == 0) { // message type 2
@@ -70,19 +68,22 @@ void Message_manager::generateMessage(int size, char* msg) {
     }
     else {
         sprintf(message, "_");
-        printf("Bad Message\n");
+        //A bad message appear. Log it.
+        syslog(LOG_ERR, "Bad message received");
         return;
     }
 
     //}
-    //sprintf(message, "Pas de message");
-
-    cout << "Message: " << message << endl;
+    //Log the message:;
+	
+    /*cout << "Message: " << message << endl;
+    cout << "fileName : " << fileName << endl;   
+    cout << "call number : " << annonce[1] << endl;*/
+    syslog(LOG_INFO, "Message: %s calling %s", message, annonce[1]);
     
     int fileName = synthesis_manager.synthesired(message);
     
-    cout << "fileName : " << fileName << endl;   
-    cout << "call number : " << annonce[1] << endl;
+    
     stringstream ss;
     ss << fileName;
     string file = ss.str();
@@ -92,13 +93,13 @@ void Message_manager::generateMessage(int size, char* msg) {
     strcat(msgChar,".wav");
     strcat(msgChar,"|sip:");
     strcat(msgChar, annonce[1]);
-    strcat(msgChar,"@192.168.1.127\n\0");
+    strcat(msgChar,"@192.168.0.35\n\0");
     fprintf (stream, "%s", msgChar);
     fflush(stream);
 }
 
 Message_manager::~Message_manager() {
-    cout << "Deleting Message Manager" << endl;
+    syslog(LOG_INFO, "Deleting Message Manager");
     fprintf (stream, "q\n");
     fflush(stream);
     fclose(stream);

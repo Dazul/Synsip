@@ -35,6 +35,7 @@
 #include <iostream>
 #include <signal.h>
 #include <sys/wait.h>
+#include <syslog.h>
 #include "Network_manager.h"
 
 using namespace std;
@@ -46,7 +47,6 @@ extern "C"{
 Network_manager *network;
 
 void sigHandler(int sig){
-    cout << "Interupt Signal received by parent" << endl;
     delete network;
 }
 
@@ -63,6 +63,7 @@ int main(int argc, char** argv) {
 	
 	int c;
 	while ((c = getopt (argc, argv, "v")) != -1)
+	{
 		switch (c) {
 			case 'v':
 				print_license();
@@ -70,9 +71,11 @@ int main(int argc, char** argv) {
 				break;
 			default:
 				continue;
-		}	
+		}
+	}
 	
-    cout << "Start program" << endl;
+    //cout << "Start program" << endl;
+    //TODO Debug
     pid_t pid;
     int mypipe[2];
 
@@ -92,20 +95,27 @@ int main(int argc, char** argv) {
         // create the network class
         signal(SIGINT, sigHandler);
         close (mypipe[0]);
+        openlog(NULL, LOG_PID, LOG_USER);
+        syslog(LOG_INFO, "***** New instance starting");
         network = new Network_manager(mypipe[1]);
 
         // create the connection stream
         if (network->createConnection()) {
 
             if (!network->waitMessage()) {
-                cout << "Waiting message error" << endl;
+            	//TODO Debug
+                //cout << "Waiting message error" << endl;
             }
         } else {
-            cout << "Cannot create connection" << endl;
+        	//TODO Debug
+            //cout << "Cannot create connection" << endl;
         }
         int returnStatus;
         waitpid(pid, &returnStatus, 0);
-        cout << "Child end status: " << returnStatus << endl;
+        //TODO Debug
+        //cout << "Child end status: " << returnStatus << endl;
+        syslog(LOG_INFO, "Application ended");
+        closelog();
     }
     return 0;
 }
