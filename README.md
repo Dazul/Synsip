@@ -1,9 +1,8 @@
-Synsip
-======
+# Synsip
 Basic call machine using SIP and TextToSpeach softwares.
 
 ## /!\ This is a prototype
-For know, Synsip is a prototype. A lot of configuration is hardcoded.
+For now, Synsip is a prototype. A lot of configuration is hardcoded.
 
 ## Dependencies
 
@@ -16,12 +15,12 @@ Synsip use Syslog as loging platforme.
 ## Installation
 
 Once PJSIP is installed on your computer, run this commandes on the Synsip foldes
-'''
+```
 ./autogen.sh
 ./configure
 make
 make install
-'''
+```
 
 ## Plateform
 
