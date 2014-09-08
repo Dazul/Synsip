@@ -25,3 +25,7 @@ make install
 ## Plateform
 
 Synsip was tested only on GNU/Linux on amd64 computer and on the Raspberry Pi.
+
+## Goals
+
+The main goal so far is to have Synsip running as a deamon, with config file for all the configuration for the V1.
