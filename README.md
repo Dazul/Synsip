@@ -1,5 +1,4 @@
-Synsip
-======
+# Synsip
 Basic call machine using SIP and TextToSpeach softwares.
 
 ## /!\ This is a prototype
