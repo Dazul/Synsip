@@ -261,7 +261,7 @@ int init_call_manager(int file)
 	    cfg.thread_cnt = 2;
 
 	    pjsua_logging_config_default(&log_cfg);
-	    log_cfg.console_level = 1;
+	    log_cfg.console_level = 0;
 
 	    status = pjsua_init(&cfg, &log_cfg, NULL);
 	    if (status != PJ_SUCCESS) error_exit("Error in pjsua_init()", status);
@@ -273,8 +273,6 @@ int init_call_manager(int file)
 
 	    pjsua_transport_config_default(&cfg);
 	    cfg.port = 5061;
-	    //cfg.bound_addr.ptr = "192.168.1.127";
-	    //cfg.bound_addr.slen = 13;
 	    status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, NULL);
 	    if (status != PJ_SUCCESS) error_exit("Error creating transport", status);
     }

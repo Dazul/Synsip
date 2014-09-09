@@ -47,6 +47,7 @@ extern "C"{
 Network_manager *network;
 
 void sigHandler(int sig){
+	cout << "Receiced the signal " << strsignal(sig) << endl;
     delete network;
 }
 
@@ -90,10 +91,12 @@ int main(int argc, char** argv) {
     //    Child
         close (mypipe[1]);
         signal(SIGINT, SIG_IGN);
+        signal(SIGTERM, SIG_IGN);
         init_call_manager(mypipe[0]);
     } else {
         // create the network class
         signal(SIGINT, sigHandler);
+        signal(SIGTERM, sigHandler);
         close (mypipe[0]);
         openlog(NULL, LOG_PID, LOG_USER);
         syslog(LOG_INFO, "***** New instance starting");

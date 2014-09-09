@@ -69,7 +69,7 @@ void Message_manager::generateMessage(int size, char* msg) {
     else {
         sprintf(message, "_");
         //A bad message appear. Log it.
-        syslog(LOG_ERR, "Bad message received");
+        syslog(LOG_ERR, "Bad formated message received: %s", msg);
         return;
     }
 
