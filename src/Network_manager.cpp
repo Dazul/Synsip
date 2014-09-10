@@ -128,7 +128,6 @@ bool Network_manager::createConnection() {
 
 bool Network_manager::waitMessage() {
     this->start();
-    this->join();
     return true;
 
 }
@@ -137,7 +136,6 @@ bool Network_manager::closeConnection() {
     close(socket_desc);
     close(client_sock);
     close(c);
-
     return true;
 }
 

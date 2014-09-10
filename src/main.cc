@@ -47,7 +47,6 @@ extern "C"{
 Network_manager *network;
 
 void sigHandler(int sig){
-	cout << "Receiced the signal " << strsignal(sig) << endl;
     delete network;
 }
 
@@ -57,17 +56,23 @@ void print_license() {
 "Copyright (C) 2014  Luis Domingues\n"
 "This is free software; see the source for copying conditions.  There is NO\n"
 "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"
-"Written by Fabien Yerly and Luis Domingues\n";
+"Written by Fabien Yerly and Luis Domingues\n"
+"Project github page: https://github.com/Dazul/Synsip\n";
 }
 
 int main(int argc, char** argv) {
 	
 	int c;
-	while ((c = getopt (argc, argv, "v")) != -1)
+	int endVal = 0;
+	while ((c = getopt (argc, argv, "vc:")) != -1)
 	{
 		switch (c) {
 			case 'v':
 				print_license();
+				return 0;
+				break;
+			case 'c':
+				cout << optarg << endl;
 				return 0;
 				break;
 			default:
@@ -106,21 +111,21 @@ int main(int argc, char** argv) {
         if (network->createConnection()) {
 
             if (!network->waitMessage()) {
-            	//TODO Debug
-                //cout << "Waiting message error" << endl;
+                syslog(LOG_INFO, "Waiting message error");
             }
         } else {
-        	//TODO Debug
-            //cout << "Cannot create connection" << endl;
+        	//Wait for the other process to be initializad correctly
+        	//To receive the the message to quit by deleting the c++ objects.
+        	sleep(2);
+        	endVal = -1;
+        	delete network;
         }
         int returnStatus;
         waitpid(pid, &returnStatus, 0);
-        //TODO Debug
-        //cout << "Child end status: " << returnStatus << endl;
         syslog(LOG_INFO, "Application ended");
         closelog();
     }
-    return 0;
+    return endVal;
 }
 
 

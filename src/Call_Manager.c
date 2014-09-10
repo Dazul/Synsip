@@ -38,12 +38,8 @@
 #define SIP_DOMAIN	"192.168.0.35"
 #define SIP_USER	"91"
 #define SIP_PASSWD	"secret"
-#define BUFFER_SIZE 255
 
-/*#define SIP_DOMAIN	"192.168.0.2"
-#define SIP_USER	"82"
-#define SIP_PASSWD	"8282"
-#define BUFFER_SIZE 255*/
+#define BUFFER_SIZE 255
 
 struct pjsua_player_eof_data
 {
