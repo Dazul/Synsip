@@ -31,14 +31,15 @@
 
 using namespace std;
 
-Synthesis_manager::Synthesis_manager(synsip_config config) {
+Synthesis_manager::Synthesis_manager(synsip_config *config) {
     //cout << "Create synthesize" << endl;
     srand (time(NULL));
+    this->config = config;
 }
 
 int Synthesis_manager::synthesired(char* annonce) { // message=0x7ffff6fd4d90 \"message test\\r\\n\"
     int fileName = rand() % 100 + 1;;
-    char ordner[] = "/home/synsip";
+    char ordner[] = config->script_path;
 
     // Text file
     char commandefile[sizeof (annonce) + 256];
@@ -48,7 +49,7 @@ int Synthesis_manager::synthesired(char* annonce) { // message=0x7ffff6fd4d90 \"
 
 	
     char script[256];
-    sprintf(script, "%s/annonce.sh %d %s", ordner, fileName, ordner);
+    sprintf(script, "%s/%s %d %s", ordner, config->script_name, fileName, ordner);
 
 
     //cout << "commande : " << script << endl;

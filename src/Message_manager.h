@@ -39,7 +39,7 @@
 
 class Message_manager {
 public:
-    Message_manager(int file, synsip_config config);
+    Message_manager(int file, synsip_config *config);
     
     void generateMessage(int size, char* msg);
 
@@ -47,7 +47,7 @@ public:
 private:
     Synthesis_manager *synthesis_manager;
     int file;
-    synsip_config config;
+    synsip_config *config;
     FILE* stream;
 };
 

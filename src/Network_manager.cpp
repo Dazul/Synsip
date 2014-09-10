@@ -91,12 +91,13 @@ void* Network_manager::run() {
     return NULL;
 }
 
-Network_manager::Network_manager(int file, synsip_config config) {
+Network_manager::Network_manager(int file, synsip_config *config) {
     //TODO Debug
     //cout << "Network create" << endl;
-    port = 7801;
+    this->config = config;
+    port = config->listen_port;
     canReceivce = true;
-    message_manager = new Message_manager(file);
+    message_manager = new Message_manager(file, config);
 }
 
 
@@ -129,7 +130,6 @@ bool Network_manager::createConnection() {
 bool Network_manager::waitMessage() {
     this->start();
     return true;
-
 }
 
 bool Network_manager::closeConnection() {

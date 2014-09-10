@@ -31,13 +31,13 @@
 
 class Synthesis_manager {
 public:
-    Synthesis_manager(synsip_config config);
+    Synthesis_manager(synsip_config *config);
     virtual ~Synthesis_manager();
     
     int synthesired(char* message);
     
 private:
-	synsip_config config;
+	synsip_config *config;
 };
 
 #endif	/* SYNTHESIZE_H */

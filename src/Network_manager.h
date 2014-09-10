@@ -35,7 +35,7 @@
 
 class Network_manager : public Thread{
 public:
-    Network_manager(int file, synsip_config config);
+    Network_manager(int file, synsip_config *config);
 
     virtual ~Network_manager();
     void* run();
@@ -50,7 +50,7 @@ private:
     int socket_desc, client_sock, c;
     struct sockaddr_in server, client;
     int port;
-    synsip_config config;
+    synsip_config *config;
     Message_manager *message_manager;
 };
 

@@ -80,7 +80,8 @@ int main(int argc, char** argv)
 	
 	int c;
 	int endVal = 0;
-	synsip_config config;
+	synsip_config *config;
+	config = malloc(sizeof(synsip_config));
 	while ((c = getopt (argc, argv, "vc:")) != -1)
 	{
 		switch (c) {
@@ -97,7 +98,7 @@ int main(int argc, char** argv)
 		}
 	}
 	
-	prepare_config(&config);
+	prepare_config(config);
     //cout << "Start program" << endl;
     //TODO Debug
     pid_t pid;
@@ -123,7 +124,7 @@ int main(int argc, char** argv)
         close (mypipe[0]);
         openlog(NULL, LOG_PID, LOG_USER);
         syslog(LOG_INFO, "***** New instance starting");
-        network = new Network_manager(mypipe[1]);
+        network = new Network_manager(mypipe[1], config);
 
         // create the connection stream
         if (network->createConnection())
@@ -144,6 +145,7 @@ int main(int argc, char** argv)
         waitpid(pid, &returnStatus, 0);
         syslog(LOG_INFO, "Application ended");
         closelog();
+        free(config);
         
     }
     return endVal;

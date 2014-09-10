@@ -26,9 +26,11 @@
 
 using namespace std;
 
-Message_manager::Message_manager(int file, synsip_config config) {
+Message_manager::Message_manager(int file, synsip_config *config) {
     this->file = file;
+    this->config = config;
     stream = fdopen (file, "w");
+    synthesis_manager = new Synthesis_manager(config);
 }
 
 void Message_manager::generateMessage(int size, char* msg) {
@@ -89,12 +91,14 @@ void Message_manager::generateMessage(int size, char* msg) {
     string file = ss.str();
     char msgChar[255];
     memset(msgChar, 0, 255);
-    strcpy(msgChar,"/home/synsip/");
-    strcat(msgChar,file.c_str());
-    strcat(msgChar,".wav");
-    strcat(msgChar,"|sip:");
+    strcpy(msgChar, this->config->script_path);
+    strcat(msgChar, file.c_str());
+    strcat(msgChar, ".wav");
+    strcat(msgChar, "|sip:");
     strcat(msgChar, annonce[1]);
-    strcat(msgChar,"@192.168.0.35\n\0");
+    strcat(msgChar, "@");
+    strcat(msgChar, this->config->registrar);
+    strcat(msgChar, "\n\0");
     fprintf (stream, "%s", msgChar);
     fflush(stream);
 }
@@ -104,5 +108,6 @@ Message_manager::~Message_manager() {
     fprintf (stream, "q\n");
     fflush(stream);
     fclose(stream);
+    delete synthesis_manager;
 }
 
