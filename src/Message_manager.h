@@ -39,14 +39,15 @@
 
 class Message_manager {
 public:
-    Message_manager(int file);
+    Message_manager(int file, synsip_config config);
     
     void generateMessage(int size, char* msg);
 
     virtual ~Message_manager();
 private:
-    Synthesis_manager synthesis_manager;
+    Synthesis_manager *synthesis_manager;
     int file;
+    synsip_config config;
     FILE* stream;
 };
 

@@ -1,6 +1,6 @@
 /*
 * Synsip, automated calling machine working with text to speech synthesis
-*
+* 
 * Copyright (C) 2014  Luis Domingues
 * 
 * This file is part of Synsip.
@@ -19,8 +19,19 @@
 * along with Synsip.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CALL_MANAGER_H
-#define	CALL_MANAGER_H
+#ifndef SYNSIP_INCLUDE_H
+#define	SYNSIP_INCLUDE_H
 
-int init_call_manager(int file);
+typedef struct {
+    char registrar[50];
+    char user[30];
+    char password[50];
+    int max_calls;
+    char script_path[30];
+    char script_name[30];
+    int listen_port;
+    int sip_port;
+}synsip_config;
+
 #endif
+

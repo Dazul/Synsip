@@ -36,21 +36,36 @@
 #include <signal.h>
 #include <sys/wait.h>
 #include <syslog.h>
+#include "include.h"
 #include "Network_manager.h"
 
 using namespace std;
 
 extern "C"{
-    int init_call_manager(int file);
+    int init_call_manager(int file, synsip_config config);
 }
 
 Network_manager *network;
 
-void sigHandler(int sig){
+void sigHandler(int sig)
+{
     delete network;
 }
 
-void print_license() {
+void prepare_config(synsip_config *config)
+{
+	strcpy(config->registrar, "192.168.0.35");
+	strcpy(config->user, "91");
+	strcpy(config->password, "secret");
+	config->max_calls = 2;
+	strcpy(config->script_path, "/home/synsip");
+	strcpy(config->script_name, "annonce.sh");
+	config->listen_port = 7801;
+	config->sip_port = 5061;
+}
+
+void print_license() 
+{
 	cout << "Synsip 0.1.0\n"
 "Copyright (C) 2014  EIA-FR (https://eia-fr.ch/)\n"
 "Copyright (C) 2014  Luis Domingues\n"
@@ -60,10 +75,12 @@ void print_license() {
 "Project github page: https://github.com/Dazul/Synsip\n";
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
 	
 	int c;
 	int endVal = 0;
+	synsip_config config;
 	while ((c = getopt (argc, argv, "vc:")) != -1)
 	{
 		switch (c) {
@@ -80,6 +97,7 @@ int main(int argc, char** argv) {
 		}
 	}
 	
+	prepare_config(&config);
     //cout << "Start program" << endl;
     //TODO Debug
     pid_t pid;
@@ -97,7 +115,7 @@ int main(int argc, char** argv) {
         close (mypipe[1]);
         signal(SIGINT, SIG_IGN);
         signal(SIGTERM, SIG_IGN);
-        init_call_manager(mypipe[0]);
+        init_call_manager(mypipe[0], config);
     } else {
         // create the network class
         signal(SIGINT, sigHandler);
@@ -108,9 +126,11 @@ int main(int argc, char** argv) {
         network = new Network_manager(mypipe[1]);
 
         // create the connection stream
-        if (network->createConnection()) {
+        if (network->createConnection())
+        {
 
-            if (!network->waitMessage()) {
+            if (!network->waitMessage())
+            {
                 syslog(LOG_INFO, "Waiting message error");
             }
         } else {
@@ -124,6 +144,7 @@ int main(int argc, char** argv) {
         waitpid(pid, &returnStatus, 0);
         syslog(LOG_INFO, "Application ended");
         closelog();
+        
     }
     return endVal;
 }

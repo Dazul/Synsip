@@ -91,7 +91,7 @@ void* Network_manager::run() {
     return NULL;
 }
 
-Network_manager::Network_manager(int file) {
+Network_manager::Network_manager(int file, synsip_config config) {
     //TODO Debug
     //cout << "Network create" << endl;
     port = 7801;

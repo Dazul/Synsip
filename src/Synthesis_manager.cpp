@@ -31,7 +31,7 @@
 
 using namespace std;
 
-Synthesis_manager::Synthesis_manager() {
+Synthesis_manager::Synthesis_manager(synsip_config config) {
     //cout << "Create synthesize" << endl;
     srand (time(NULL));
 }

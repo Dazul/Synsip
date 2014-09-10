@@ -26,7 +26,7 @@
 
 using namespace std;
 
-Message_manager::Message_manager(int file) {
+Message_manager::Message_manager(int file, synsip_config config) {
     this->file = file;
     stream = fdopen (file, "w");
 }
@@ -88,6 +88,7 @@ void Message_manager::generateMessage(int size, char* msg) {
     ss << fileName;
     string file = ss.str();
     char msgChar[255];
+    memset(msgChar, 0, 255);
     strcpy(msgChar,"/home/synsip/");
     strcat(msgChar,file.c_str());
     strcat(msgChar,".wav");

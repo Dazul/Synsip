@@ -19,7 +19,6 @@
 * along with Synsip.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Call_Manager.h"
 #include "queue.h"
 
 #include <pjsua-lib/pjsua.h>
@@ -32,13 +31,10 @@
 #include <errno.h>
 #include <time.h>
 #include <pthread.h>
+#include "include.h"
 
 #define THIS_FILE	"Call_Manager"
-
-#define SIP_DOMAIN	"192.168.0.35"
-#define SIP_USER	"91"
-#define SIP_PASSWD	"secret"
-
+#define LOG_LEVEL 0
 #define BUFFER_SIZE 255
 
 struct pjsua_player_eof_data
@@ -236,7 +232,7 @@ void make_call(char *msgFile, char *num)
     play_file(call_id, msgFile);
 }
 
-int init_call_manager(int file)
+int init_call_manager(int file, synsip_config config)
 {
     pjsua_acc_id acc_id;
     pj_status_t status;
@@ -257,7 +253,7 @@ int init_call_manager(int file)
 	    cfg.thread_cnt = 2;
 
 	    pjsua_logging_config_default(&log_cfg);
-	    log_cfg.console_level = 0;
+	    log_cfg.console_level = LOG_LEVEL;
 
 	    status = pjsua_init(&cfg, &log_cfg, NULL);
 	    if (status != PJ_SUCCESS) error_exit("Error in pjsua_init()", status);
@@ -268,7 +264,7 @@ int init_call_manager(int file)
 	    pjsua_transport_config cfg;
 
 	    pjsua_transport_config_default(&cfg);
-	    cfg.port = 5061;
+	    cfg.port = config.sip_port;
 	    status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, NULL);
 	    if (status != PJ_SUCCESS) error_exit("Error creating transport", status);
     }
@@ -287,13 +283,23 @@ int init_call_manager(int file)
 	    pjsua_acc_config cfg;
 
 	    pjsua_acc_config_default(&cfg);
-	    cfg.id = pj_str("sip:" SIP_USER "@" SIP_DOMAIN);
-	    cfg.reg_uri = pj_str("sip:" SIP_DOMAIN);
+	    char id[80];
+	    char reg[80];
+	    memset(id, 0, 80);
+	    memset(reg, 0, 80);
+	    strcat(id, "sip:");
+	    strcat(reg, "sip:");
+	    strcat(id, config.user);
+	    strcat(id, "@");
+	    strcat(id, config.registrar);
+	    strcat(reg, config.registrar);
+	    cfg.id = pj_str(id);
+	    cfg.reg_uri = pj_str(reg);
 	    cfg.cred_count = 1;
 	    cfg.cred_info[0].realm = pj_str("*");
-	    cfg.cred_info[0].username = pj_str(SIP_USER);
+	    cfg.cred_info[0].username = pj_str(config.user);
 	    cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
-	    cfg.cred_info[0].data = pj_str(SIP_PASSWD);
+	    cfg.cred_info[0].data = pj_str(config.password);
 
 	    status = pjsua_acc_add(&cfg, PJ_TRUE, &acc_id);
 	    if (status != PJ_SUCCESS) error_exit("Error adding account", status);
@@ -301,7 +307,7 @@ int init_call_manager(int file)
     init_queue(50);
     sem_init(&wait_start_call, 0, 0);
     sem_init(&wait_destroy_player, 0, 0);
-    sem_init(&wait_two_calls, 0, 2);
+    sem_init(&wait_two_calls, 0, config.max_calls);
     pthread_create(&destroy_thread, NULL, &destroy_players, NULL);
     /* Wait until user press "q" to quit. */
     stream = fdopen (file, "r");
