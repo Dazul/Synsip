@@ -36,6 +36,7 @@
 #include <string>
 #include <sstream>
 #include <syslog.h>
+#include "include.h"
 
 class Message_manager {
 public:

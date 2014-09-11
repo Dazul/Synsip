@@ -28,6 +28,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
+#include "include.h"
 
 class Synthesis_manager {
 public:

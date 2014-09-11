@@ -83,7 +83,7 @@ void Message_manager::generateMessage(int size, char* msg) {
     cout << "call number : " << annonce[1] << endl;*/
     syslog(LOG_INFO, "Message: %s calling %s", message, annonce[1]);
     
-    int fileName = synthesis_manager.synthesired(message);
+    int fileName = synthesis_manager->synthesired(message);
     
     
     stringstream ss;
@@ -92,6 +92,7 @@ void Message_manager::generateMessage(int size, char* msg) {
     char msgChar[255];
     memset(msgChar, 0, 255);
     strcpy(msgChar, this->config->script_path);
+    strcat(msgChar, "/");
     strcat(msgChar, file.c_str());
     strcat(msgChar, ".wav");
     strcat(msgChar, "|sip:");

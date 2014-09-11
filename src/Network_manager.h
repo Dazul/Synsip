@@ -32,6 +32,7 @@
 
 #include "Thread.h"
 #include "Message_manager.h"
+#include "include.h"
 
 class Network_manager : public Thread{
 public:

@@ -38,18 +38,17 @@ Synthesis_manager::Synthesis_manager(synsip_config *config) {
 }
 
 int Synthesis_manager::synthesired(char* annonce) { // message=0x7ffff6fd4d90 \"message test\\r\\n\"
-    int fileName = rand() % 100 + 1;;
-    char ordner[] = config->script_path;
+    int fileName = rand() % 100 + 1;
 
     // Text file
     char commandefile[sizeof (annonce) + 256];
-    sprintf(commandefile, "echo \"%s\" > /%s/%d", annonce, ordner, fileName); // generate command
+    sprintf(commandefile, "echo \"%s\" > /%s/%d", annonce, config->script_path, fileName); // generate command
     //cout << commandefile << endl;
     system(commandefile); // execute command
 
 	
     char script[256];
-    sprintf(script, "%s/%s %d %s", ordner, config->script_name, fileName, ordner);
+    sprintf(script, "%s/%s %d %s", config->script_path, config->script_name, fileName, config->script_path);
 
 
     //cout << "commande : " << script << endl;

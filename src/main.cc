@@ -42,7 +42,7 @@
 using namespace std;
 
 extern "C"{
-    int init_call_manager(int file, synsip_config config);
+    int init_call_manager(int file, synsip_config *config);
 }
 
 Network_manager *network;
@@ -81,7 +81,7 @@ int main(int argc, char** argv)
 	int c;
 	int endVal = 0;
 	synsip_config *config;
-	config = malloc(sizeof(synsip_config));
+	config = (synsip_config*) malloc(sizeof(synsip_config));
 	while ((c = getopt (argc, argv, "vc:")) != -1)
 	{
 		switch (c) {
