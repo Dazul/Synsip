@@ -4,7 +4,7 @@
 * Copyright (C) 2014  EIA-FR (https://eia-fr.ch/)
 * author: Fabien Yerly
 * 
-* Copyright (C) 2014  Luis Domingues
+* Copyright (C) 2014-2015  Luis Domingues
 * 
 * This file is part of Synsip.
 * 
@@ -22,35 +22,39 @@
 * along with Synsip.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CREATEMESSAGE_H
-#define	CREATEMESSAGE_H
+#ifndef MESSAGE_MANAGER_H
+#define	MESSAGE_MANAGER_H
+
+#include "Thread.h"
+#include "config.h"
+#include <vector>
+#include <string>
 
 #include "Synthesis_manager.h"
+#include "Database_manager.h"
+#include "Call_manager.h"
 
-#include <iostream>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <time.h>
-#include <unistd.h>
-#include <string>
-#include <sstream>
-#include <syslog.h>
-#include "include.h"
-
-class Message_manager {
+class Message_manager : public Thread {
 public:
-    Message_manager(int file, synsip_config *config);
+    Message_manager(Synthesis_manager *synthesis_manager, Database_manager *database_manager, Call_manager *call_manager);
     
-    void generateMessage(int size, char* msg);
-
+    bool init(synsip_config *config);
+    void analyse_message(char *message);
+    
     virtual ~Message_manager();
 private:
-    Synthesis_manager *synthesis_manager;
-    int file;
+    void *run();
+    bool generate_annonce(char *message);
     synsip_config *config;
-    FILE* stream;
+    
+    Synthesis_manager *synthesis_manager;
+    Database_manager *database_manager;
+    Call_manager *call_manager;
+
+    int id;
+    str_message str_msg;
+ 
 };
 
-#endif	/* CREATEMESSAGE_H */
+#endif	/* MESSAGE_MANAGER_H */
 

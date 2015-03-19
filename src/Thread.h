@@ -4,7 +4,7 @@
 * Copyright (C) 2014  EIA-FR (https://eia-fr.ch/)
 * author: Fabien Yerly
 * 
-* Copyright (C) 2014  Luis Domingues
+* Copyright (C) 2014-2015  Luis Domingues
 * 
 * This file is part of Synsip.
 * 

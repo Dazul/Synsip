@@ -21,25 +21,34 @@
 * You should have received a copy of the GNU General Public License
 * along with Synsip.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef SYNTHESIS_MANAGER_H
-#define	SYNTHESIS_MANAGER_H
 
-#include "config.h"
+#ifndef HP_MANAGER_H
+#define	HP_MANAGER_H
 
+#include <pjsua-lib/pjsua.h>
+#include "Thread.h"
 
-class Synthesis_manager {
-public:
-    Synthesis_manager();
-    
-    bool init(synsip_config* config);
-    int synthesired(char* annonce, int language);
-    
-    virtual ~Synthesis_manager();
-private:
-    
-    synsip_config* config;
-
+struct pjsua_player_eof_data {
+    pj_pool_t *pool;
+    pjsua_call_id call_id;
+    pjsua_player_id player_id;
 };
 
-#endif	/* SYNTHESIS_MANAGER_H */
+class HP_manager : public Thread {
+public:
+    HP_manager(pjsua_acc_id acc_id);
+    pjsua_call_id call(char* number);
+    bool play_audio_file(pjsua_call_id call_id, char* audio_file);
+    
+    bool hangup_hp(pjsua_call_id call_id);
+    bool hangup_hp_all();
+    virtual ~HP_manager();
+    
+private:
+    pjsua_acc_id acc_id;
+    int play_file(pjsua_call_id call_id, char* audfile);
+    void *run();
+};
+
+#endif	/* HP_MANAGER_H */
 

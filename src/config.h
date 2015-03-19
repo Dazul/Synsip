@@ -21,25 +21,30 @@
 * You should have received a copy of the GNU General Public License
 * along with Synsip.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef SYNTHESIS_MANAGER_H
-#define	SYNTHESIS_MANAGER_H
 
-#include "config.h"
+#ifndef CONFIG_H
+#define	CONFIG_H
 
+typedef struct {
+    char registrar[50]; // The address of the registrar (SIP telephone centrale)
+    char user[30]; // The username
+    char password[50]; // The userpassword
+    int sip_port; // The SIP port
+    int max_calls; // The number of maximum call
+    char script_path[30]; // The directories script
+    char scriptfr_name[30]; // The script's name to do French
+    char scriptde_name[30]; // The script's name to de German
+    int listen_port; // The port to connect from the automate
+    int listen_port_local; // The port to connect from local client
+    char bd_server[50];
+    char bd_user[50];
+    char bd_pass[50];
+    char bd_db[50];
+} synsip_config;
 
-class Synthesis_manager {
-public:
-    Synthesis_manager();
-    
-    bool init(synsip_config* config);
-    int synthesired(char* annonce, int language);
-    
-    virtual ~Synthesis_manager();
-private:
-    
-    synsip_config* config;
+typedef struct {
+    char gare[50];
+} message_db;
 
-};
-
-#endif	/* SYNTHESIS_MANAGER_H */
+#endif	/* CONFIG_H */
 
