@@ -1,4 +1,4 @@
-AC_INIT(src/main.cc)
+AC_INIT(src/main.cpp)
 
 PACKAGE=synsip
 VERSION=0.1.0
