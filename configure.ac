@@ -22,8 +22,11 @@ else
 fi
 CC="$PTHREAD_CC"
 
-AX_CHECK_COMPILE_FLAG([-std=c++11], [CXXFLAGS="$CXXFLAGS -std=c++11"])
-AX_CHECK_COMPILE_FLAG([-std=c++0x], [CXXFLAGS="$CXXFLAGS -std=c++0x"])
+C11="OK"
+AX_CHECK_COMPILE_FLAG([-std=c++11], [CXXFLAGS="$CXXFLAGS -std=c++11"], C11="NO")
+if test "$C11" = "NO"; then
+	AX_CHECK_COMPILE_FLAG([-std=c++0x], [CXXFLAGS="$CXXFLAGS -std=c++0x"], echo "C++11 or C++0x mandatory"; exit)
+fi
 
 AC_PROG_CXX
 AC_PROG_CC
