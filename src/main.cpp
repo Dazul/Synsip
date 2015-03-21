@@ -47,23 +47,17 @@ void sigHandler(int sig) {
  * @param config
  */
 void read_config(synsip_config *config) {
-
-    config->listen_port = 7800;
+	//Example of hardcoded config. Not real one.
+    config->listen_port = 7801;
     config->listen_port_local = 6800;
-    strcpy(config->registrar, "10.42.0.78");
-    strcpy(config->user, "70");
-    strcpy(config->password, "7070");
-    strcpy(config->user, "70");
-    strcpy(config->user, "70");
+    strcpy(config->registrar, "192.168.0.121");
+    strcpy(config->user, "91");
+    strcpy(config->password, "secret");
     config->max_calls = 4;
-    strcpy(config->script_path, "/synsip");
-    strcpy(config->scriptfr_name, "synthesisFR.sh");
-    strcpy(config->scriptde_name, "synthesisDE.sh");
-    config->sip_port = 5060; // default port
-    strcpy(config->bd_server, "localhost");
-    strcpy(config->bd_user, "programannonce");
-    strcpy(config->bd_pass, "passprogram");
-    strcpy(config->bd_db, "vapeurparc");
+    strcpy(config->script_path, "/home/user/SynSipTest");
+    strcpy(config->scriptfr_name, "annonce.sh");
+    strcpy(config->scriptde_name, "annonce.sh");
+    config->sip_port = 5061; // default port
 }
 
 /**
