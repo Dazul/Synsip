@@ -31,7 +31,6 @@
 
 #include "Thread.h"
 #include "HP_manager.h"
-#include "Database_manager.h"
 
 /*
 struct pjsua_player_eof_data {
@@ -63,7 +62,7 @@ struct mycall_info{
 
 class Call_manager : public Thread {
 public:
-    Call_manager(Database_manager *database_manager);
+    Call_manager();
     
     bool init(synsip_config *config); 
     bool wait();

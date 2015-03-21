@@ -76,12 +76,9 @@ map<int, mycall_info> call_mstate; // "machine state"
 int cid_number[MAX_SIZE]; // call_id <=> phone number
 mutex mtx_state_access;
 
-Database_manager *db_manager;
 time_t now;
 
-Call_manager::Call_manager(Database_manager *database_manager) {
-    db_manager = database_manager;
-
+Call_manager::Call_manager() {
     sem_init(&wait_call_status_broadcast, 0, 0);
     sem_init(&wait_call_status_one, 0, 0);
     sem_init(&wait_destroy_player, 0, 0);
@@ -195,8 +192,6 @@ void change_call_stat(pjsua_call_id call_id, int status) {
         case STAT_CONFIRME:
             newmci.call_status = STAT_CONFIRME; // update status
             newmci.timeout = now + TIMEOUT_CONF; // update timeout
-            // Update status in database to "en cours"
-            db_manager->updatemessage(EN_COURS, newmci.bd_id);
             break;
         case STAT_DISCONNECTED:
             newmci.call_status = STAT_DISPO;
@@ -205,12 +200,12 @@ void change_call_stat(pjsua_call_id call_id, int status) {
             if (mci.call_status < STAT_CONFIRME || mci.call_status == STAT_TIMEOUT) {
                 char err[50];
 
-                db_manager->updatemessage(ERR_HP, mci.bd_id); // update message database
+                syslog(LOG_INFO, "Cannot wait connection");
                 if (mci.broadast) {
                     play_file_broadcast(call_id, status);
                 }
             } else {
-                db_manager->updatemessage(HISTORIQUE, newmci.bd_id);
+                //db_manager->updatemessage(HISTORIQUE, newmci.bd_id);
                 // delete file
                 // delete_file(newmci.audio_file);
             }
@@ -477,7 +472,7 @@ void Call_manager::manage_broadcast_call(str_annonce annonce, pjsua_acc_id acc_i
             pjsua_call_id call_id = mci.hp_manager->call(mci.number);
             if (call_id == -1) {
                 // Here remake test after any time
-                db_manager->updatemessage(ERR_HP, mci.bd_id); // update message database
+                syslog(LOG_INFO, "Error HP");
             } else {
                 mci.call_id = call_id;
                 call_mstate[n] = mci;
@@ -491,7 +486,7 @@ void Call_manager::manage_broadcast_call(str_annonce annonce, pjsua_acc_id acc_i
                 pjsua_call_id call_id = mci.hp_manager->call(mci.number);
                 if (call_id == -1) {
                     // Here remake test after any time
-                    db_manager->updatemessage(ERR_HP, mci.bd_id); // update message database
+                    syslog(LOG_INFO, "Error HP");
                 } else {
                     mci.call_id = call_id;
                     call_mstate.at(n) = mci;
@@ -550,7 +545,7 @@ void Call_manager::manage_individual_call(str_annonce annonce, pjsua_acc_id acc_
         printf("Number not in call_mstate\n");
         pjsua_call_id call_id = mci.hp_manager->call(mci.number);
         if (call_id == -1) {
-            db_manager->updatemessage(ERR_HP, mci.bd_id); // update message database
+            syslog(LOG_INFO, "Error HP");
 
         } else {
             mci.call_id = call_id;
@@ -564,7 +559,7 @@ void Call_manager::manage_individual_call(str_annonce annonce, pjsua_acc_id acc_
         if (old_mci.call_status == STAT_DISPO) {
             pjsua_call_id call_id = mci.hp_manager->call(mci.number);
             if (call_id == -1) {
-                db_manager->updatemessage(ERR_HP, mci.bd_id); // update message database
+                syslog(LOG_INFO, "Error HP");
             } else {
                 mci.call_id = call_id;
                 call_mstate.at(n) = mci;
@@ -572,7 +567,7 @@ void Call_manager::manage_individual_call(str_annonce annonce, pjsua_acc_id acc_
             }
         } else {
             // can wait here before retry call the hp
-            db_manager->updatemessage(ERR_HP, mci.bd_id);
+            syslog(LOG_INFO, "Error HP");
         }
     }
     mtx_state_access.unlock();

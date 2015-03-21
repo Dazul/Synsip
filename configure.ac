@@ -22,6 +22,8 @@ else
 fi
 CC="$PTHREAD_CC"
 
+AX_CHECK_COMPILE_FLAG([-std=c++11], [CXXFLAGS="$CXXFLAGS -std=c++11"])
+
 AC_PROG_CXX
 AC_PROG_CC
 
