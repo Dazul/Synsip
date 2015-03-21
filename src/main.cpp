@@ -25,13 +25,11 @@
 #include "config.h"
 #include "Message_manager.h"
 #include "Synthesis_manager.h"
-#include "Database_manager.h"
 #include "Call_manager.h"
 #include "Timeout_manager.h"
 
 using namespace std;
 
-Database_manager *database_manager;
 Synthesis_manager *synthesis_manager;
 Call_manager *call_manager;
 Message_manager *message_manager;
@@ -95,15 +93,9 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    // Create the database manager
-    database_manager = new Database_manager();
-    if (!database_manager->init(config)) {
-        syslog(LOG_ERR, "Cannot initialize Database manager");
-        return EXIT_FAILURE;
-    }
 
     // Create the call mananger
-    call_manager = new Call_manager(database_manager);
+    call_manager = new Call_manager();
     if (!call_manager->init(config)) {
         syslog(LOG_ERR, "Cannot initialize Call manager");
         return EXIT_FAILURE;
@@ -114,7 +106,7 @@ int main(int argc, char** argv) {
     timeout_manager->start();
 
     // Create the message manager
-    message_manager = new Message_manager(synthesis_manager, database_manager, call_manager);
+    message_manager = new Message_manager(synthesis_manager, call_manager);
 
     // Create the network manager from automate
     network_manager = new Network_manager(message_manager);

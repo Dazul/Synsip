@@ -43,9 +43,8 @@ queue<char*> msg_queue;
 mutex mymutex;
 condition_variable mycond;
 
-Message_manager::Message_manager(Synthesis_manager *synthesis_manager, Database_manager *database_manager, Call_manager *call_manager) {
+Message_manager::Message_manager(Synthesis_manager *synthesis_manager, Call_manager *call_manager) {
     this->synthesis_manager = synthesis_manager;
-    this->database_manager = database_manager;
     this->call_manager = call_manager;
 
     cout << "Message_manager create" << endl;
@@ -130,8 +129,6 @@ bool Message_manager::generate_annonce(char message[]) {
     const char* annonce[9]; // 0 type, 1 number, 2 diffusion, 3 message, 4 voie, 5 train, 6 gare, 7 depart, 8 language
 
     id = -1;
-    str_msg.receivetime = receive_time;
-    str_msg.receivedate = receive_date;
     printf("Time %s, date %s\n", receive_time, receive_date);
 
     vector<string> VecStr;
@@ -139,14 +136,6 @@ bool Message_manager::generate_annonce(char message[]) {
     if (nbTabl != 10) { // 10 size of message standard, 11 size of message delayed
         if (nbTabl != 11) {
             syslog(LOG_ERR, "Cannot read message : syntax error");
-            // Store message error in Database
-            str_msg.status = ERR_MESSAGE;
-            str_msg.mesage = (char*) msg.c_str();
-
-            id = database_manager->savemessage(str_msg);
-            if (id == -1) {
-                syslog(LOG_INFO, "Message error no store in database");
-            }
             return false;
         }
         id = atoi(VecStr[9].c_str()); // Get the id
@@ -157,25 +146,8 @@ bool Message_manager::generate_annonce(char message[]) {
 
     }
 
-    // Create message for Database
-    str_msg.type = (char*) annonce[0];
-    str_msg.hp = (char*) annonce[1];
-    str_msg.diffusion = (char*) annonce[2];
-    str_msg.mesage = (char*) annonce[3];
-    str_msg.voie = (char*) annonce[4];
-    str_msg.train = (char*) annonce[5];
-    str_msg.gare = (char*) annonce[6];
-    str_msg.depart = (char*) annonce[7];
-    str_msg.langue = (char*) annonce[8];
-
     // Check if is a delayed message
     if (strcmp(annonce[2], "") != 0) {
-        // Store in database
-        str_msg.status = EN_ATTENTE;
-        id = database_manager->savemessage(str_msg);
-        if (id == -1) {
-            syslog(LOG_INFO, "Message no store in database");
-        }
 
         vector<string> datetime;
         string dt = annonce[2];
@@ -198,19 +170,6 @@ bool Message_manager::generate_annonce(char message[]) {
         }
 
         return true;
-    }
-
-    // Store in database or update message already store
-    if (id != -1) { // update
-        if (!database_manager->updatemessage(EN_ATTENTE, id)) {
-            syslog(LOG_INFO, "Message no update in database");
-        }
-    } else {
-        str_msg.status = EN_ATTENTE;
-        id = database_manager->savemessage(str_msg);
-        if (id == -1) {
-            syslog(LOG_INFO, "Message no store in database");
-        }
     }
 
     // Generate the advertisement depending the type
@@ -284,14 +243,6 @@ bool Message_manager::generate_annonce(char message[]) {
         syslog(LOG_INFO, "Advertisement send");
     } else {
         syslog(LOG_INFO, "Error send advertisement");
-    }
-
-
-    // update in database
-    if (id != -1) {
-        if (!database_manager->updatemessage(EN_ATTENTE, id)) {
-            syslog(LOG_INFO, "Message no update in database");
-        }
     }
     
     return true;

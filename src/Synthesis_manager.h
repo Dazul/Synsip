@@ -21,8 +21,7 @@
 * You should have received a copy of the GNU General Public License
 * along with Synsip.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef SYNTHESIS_MANAGER_H
-#define	SYNTHESIS_MANAGER_H
+#pragma once
 
 #include "config.h"
 
@@ -41,5 +40,5 @@ private:
 
 };
 
-#endif	/* SYNTHESIS_MANAGER_H */
+/* SYNTHESIS_MANAGER_H */
 

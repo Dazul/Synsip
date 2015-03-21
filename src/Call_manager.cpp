@@ -205,7 +205,7 @@ void change_call_stat(pjsua_call_id call_id, int status) {
                     play_file_broadcast(call_id, status);
                 }
             } else {
-                //db_manager->updatemessage(HISTORIQUE, newmci.bd_id);
+                //TODO db_manager->updatemessage(HISTORIQUE, newmci.bd_id);
                 // delete file
                 // delete_file(newmci.audio_file);
             }
@@ -381,8 +381,8 @@ void* Call_manager::run() {
             cfg.id = pj_str(id);
             cfg.reg_uri = pj_str(reg);
             cfg.cred_count = 1;
-            cfg.cred_info[0].realm = pj_str("*");
-            cfg.cred_info[0].scheme = pj_str("digest");
+            cfg.cred_info[0].realm = pj_str((char *)"*");
+            cfg.cred_info[0].scheme = pj_str((char *)"digest");
             cfg.cred_info[0].username = pj_str(config->user);
             cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
             cfg.cred_info[0].data = pj_str(config->password);

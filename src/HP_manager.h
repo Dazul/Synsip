@@ -22,8 +22,7 @@
 * along with Synsip.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef HP_MANAGER_H
-#define	HP_MANAGER_H
+#pragma once
 
 #include <pjsua-lib/pjsua.h>
 #include "Thread.h"
@@ -50,5 +49,5 @@ private:
     void *run();
 };
 
-#endif	/* HP_MANAGER_H */
+/* HP_MANAGER_H */
 

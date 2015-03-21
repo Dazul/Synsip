@@ -22,8 +22,7 @@
 * along with Synsip.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CONFIG_H
-#define	CONFIG_H
+#pragma once
 
 typedef struct {
     char registrar[50]; // The address of the registrar (SIP telephone centrale)
@@ -46,5 +45,5 @@ typedef struct {
     char gare[50];
 } message_db;
 
-#endif	/* CONFIG_H */
+/* CONFIG_H */
 

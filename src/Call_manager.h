@@ -22,13 +22,12 @@
 * along with Synsip.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CALL_MANAGER_H
-#define	CALL_MANAGER_H
+#pragma once
 
 #include <array>
 #include <pjsua-lib/pjsua.h>
 
-
+#include "config.h"
 #include "Thread.h"
 #include "HP_manager.h"
 
@@ -79,5 +78,5 @@ private:
     
 };
 
-#endif	/* CALL_MANAGER_H */
+/* CALL_MANAGER_H */
 

@@ -22,8 +22,7 @@
 * along with Synsip.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef NETWORK_MANAGER_H
-#define	NETWORK_MANAGER_H
+#pragma once
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -51,4 +50,4 @@ private:
     Message_manager *message_manager;
 };
 
-#endif	/* NETWORK_MANAGER_H */
+/* NETWORK_MANAGER_H */
