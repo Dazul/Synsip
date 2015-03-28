@@ -52,7 +52,7 @@ int Synthesis_manager::synthesired(char* annonce, int language) {
     char commandefile[sizeof (annonce) + 256];
     sprintf(commandefile, "echo \"%s\" > %s/%d", annonce, config->script_path, fileName);
     if (system(commandefile) == -1) {
-        syslog(LOG_ERR, "Cannot create the annonce file, error cmd system : %d", errno);
+        syslog(LOG_ERR, "Cannot create the annonce file, error cmd system : %s", strerror(errno));
         return -1;
     }
 

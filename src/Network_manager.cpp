@@ -51,7 +51,7 @@ bool Network_manager::create_connection(int port) {
     // Create the socket
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket == -1) {
-        syslog(LOG_ERR, "Server socket error : %d", errno);
+        syslog(LOG_ERR, "Server socket error : %s", strerror(errno));
         return false;
     }
 
@@ -63,7 +63,7 @@ bool Network_manager::create_connection(int port) {
     //Bind the socket
     if (bind(server_socket, (struct sockaddr *) &server, sizeof (server)) < 0) {
         //Print the error message
-        syslog(LOG_ERR, "Bind error : %d", errno);
+        syslog(LOG_ERR, "Bind error : %s", strerror(errno));
         return false;
     }
 
@@ -92,7 +92,7 @@ void* Network_manager::run() {
         // Listen of connection
         int result = listen(server_socket, 1); // 3 connection (one for automate, one for the web interface and one for the delayed message)
         if (result == -1) {
-            syslog(LOG_ERR, "Listen error : %d", errno);
+            syslog(LOG_ERR, "Listen error : %s", strerror(errno));
             return NULL;
         }
 
@@ -100,7 +100,7 @@ void* Network_manager::run() {
         // Accept the incoming connection
         client_socket = accept(server_socket, (struct sockaddr *) &client, (socklen_t*) & sockadd_size);
         if (client_socket == -1) {
-            syslog(LOG_ERR, "Client socket error : %d", errno);
+            syslog(LOG_ERR, "Client socket error : %s", strerror(errno));
             return NULL;
         }
         syslog(LOG_INFO, "Client connected : %s", inet_ntoa(client.sin_addr));
@@ -122,7 +122,7 @@ void* Network_manager::run() {
                 this->wait_connection(); // wait new connection
             }
             if (read_size == -1) {
-                syslog(LOG_ERR, "Client message error : %d", errno);
+                syslog(LOG_ERR, "Client message error : %s", strerror(errno));
             }
         }
     }

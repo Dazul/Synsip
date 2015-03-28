@@ -166,7 +166,7 @@ bool Message_manager::generate_annonce(char message[]) {
         sprintf(commande, "echo \"%s '%s' %d\" | at %s %s/%s/%s", "send", newmessage, config->listen_port_local, time.c_str(), month.c_str(), day.c_str(), year.c_str());
         cout << commande << endl;
         if (system(commande) == -1) {
-            syslog(LOG_ERR, "Cannot execute delay commande : %d", errno);
+            syslog(LOG_ERR, "Cannot execute delay commande : %s", strerror(errno));
         }
 
         return true;

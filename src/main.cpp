@@ -10,7 +10,6 @@
 #include <iostream>
 #include <fcntl.h>
 #include <fstream>
-#include <errno.h>
 #include <string.h>
 #include <pthread.h> //for threading , link with lpthread
 #include <sys/types.h>

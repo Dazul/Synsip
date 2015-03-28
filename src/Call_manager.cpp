@@ -122,7 +122,7 @@ void delete_file(char* file) {
     sprintf(commandefile, "rm -f %s", file); // if file already remove (broadcast) use -f
     if (system(commandefile) == -1) {
 
-        syslog(LOG_ERR, "Cannot delete the audio file : %d", errno);
+        syslog(LOG_ERR, "Cannot delete the audio file : %s", strerror(errno));
     }
 }
 
