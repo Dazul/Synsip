@@ -49,11 +49,11 @@ void read_config(synsip_config *config) {
 	//Example of hardcoded config. Not real one.
     config->listen_port = 7801;
     config->listen_port_local = 6800;
-    strcpy(config->registrar, "192.168.1.127");
+    strcpy(config->registrar, "192.168.0.121");
     strcpy(config->user, "91");
     strcpy(config->password, "secret");
     config->max_calls = 4;
-    strcpy(config->script_path, "/home/synsip");
+    strcpy(config->script_path, "/home/user/SynSipTest");
     strcpy(config->scriptfr_name, "annonce.sh");
     strcpy(config->scriptde_name, "annonce.sh");
     config->sip_port = 5061; // default port

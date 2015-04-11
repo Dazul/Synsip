@@ -47,15 +47,19 @@ pjsua_call_id HP_manager::call(char* num) {
     pjsua_call_id call_id = -1;
     pj_str_t uri_arg;
 
-    uri_arg.ptr = num;
-    uri_arg.slen = strlen(num);
+    //uri_arg.ptr = num;
+    uri_arg.ptr = "92@192.168.0.121:5060";
+    //uri_arg.slen = strlen(num);
+    uri_arg.slen = 21;
     // make the call
 
     status = pjsua_call_make_call(acc_id, &uri_arg, 0, NULL, NULL, &call_id);
 
     if (status != PJ_SUCCESS) {
-        // TODO log
-        printf("HP %s, not response\n", num);
+        // TODO lognaut
+        char buffer[255];
+        pj_str_t error = pjsip_strerror(status, buffer, 255);
+        printf("HP %s, does not answer. %s\n", num, buffer);
         return -1;
     }
     return call_id;
