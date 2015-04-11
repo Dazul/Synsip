@@ -23,6 +23,7 @@
 */
 
 #include <sys/syslog.h>
+#include <string.h>
 #include <errno.h>
 #include <iostream>
 #include <stdlib.h>

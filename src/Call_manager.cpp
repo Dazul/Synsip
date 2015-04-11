@@ -341,10 +341,10 @@ void* Call_manager::run() {
             pjsua_transport_config cfg;
             pjsua_transport_config_default(&cfg);
             /** TODO change */
-            cfg.port = 5060; //config->sip_port;
+            cfg.port = 5061; //config->sip_port;
             status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, NULL);
             if (status != PJ_SUCCESS) {
-                syslog(LOG_ERR, "Error creating transport : %d", status);
+                syslog(LOG_ERR, "Error creating pjsua transport : %d", status);
                 return NULL;
             }
         }
@@ -381,8 +381,8 @@ void* Call_manager::run() {
             cfg.id = pj_str(id);
             cfg.reg_uri = pj_str(reg);
             cfg.cred_count = 1;
-            cfg.cred_info[0].realm = pj_str((char *)"*");
-            cfg.cred_info[0].scheme = pj_str((char *)"digest");
+            cfg.cred_info[0].realm = pj_str("*");
+            //cfg.cred_info[0].scheme = pj_str((char *)"digest");
             cfg.cred_info[0].username = pj_str(config->user);
             cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
             cfg.cred_info[0].data = pj_str(config->password);
