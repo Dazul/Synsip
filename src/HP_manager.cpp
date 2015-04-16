@@ -26,6 +26,7 @@
 #include <arpa/nameser_compat.h>
 #include <sys/syslog.h>
 #include <unistd.h>
+#include <iostream>
 #include "HP_manager.h"
 #include "Call_manager.h"
 sem_t wait_file_end;
@@ -46,11 +47,11 @@ pjsua_call_id HP_manager::call(char* num) {
     pj_status_t status;
     pjsua_call_id call_id = -1;
     pj_str_t uri_arg;
-
-    //uri_arg.ptr = num;
-    uri_arg.ptr = "92@192.168.0.121:5060";
-    //uri_arg.slen = strlen(num);
-    uri_arg.slen = 21;
+	num = "sip:92@192.168.X.XXX";
+    uri_arg.ptr = num;
+    uri_arg.slen = strlen(num);
+    std::cout << "Num is: " << num << std::endl;
+    std::cout << "Len is: " << strlen(num) << std::endl;
     // make the call
 
     status = pjsua_call_make_call(acc_id, &uri_arg, 0, NULL, NULL, &call_id);
@@ -84,6 +85,8 @@ int HP_manager::play_file(pjsua_call_id call_id, char* audfile) { //
         return -1;
     }
     pj_str_t file;
+    audfile = "/home/user/SynSipTest/90.wav";
+    std::cout << "File is: " << audfile << std::endl;
     file.ptr = audfile;
     file.slen = strlen(audfile);
 
@@ -91,7 +94,9 @@ int HP_manager::play_file(pjsua_call_id call_id, char* audfile) { //
     pj_status_t status;
     status = pjsua_player_create(&file, PJMEDIA_FILE_NO_LOOP, &player_id);
     if (status != PJ_SUCCESS) {
-        printf("Unable to create\n");
+    	char buffer[255];
+        pj_str_t error = pjsip_strerror(status, buffer, 255);
+        printf("Unable to create. %s\n", buffer);
         return status;
     }
 
