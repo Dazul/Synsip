@@ -1,9 +1,26 @@
-/* 
- * File:   main.cpp
- * Author: Fabien Yerly
- *
- * Created on September 20, 2014, 9:03 PM
- */
+/*
+* Synsip, automated calling machine working with text to speech synthesis
+* 
+* Copyright (C) 2014  EIA-FR (https://eia-fr.ch/)
+* author: Fabien Yerly
+* 
+* Copyright (C) 2014-2015  Luis Domingues
+* 
+* This file is part of Synsip.
+* 
+* Synsip is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 2 of the License, or
+* (at your option) any later version.
+* 
+* Synsip is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+* 
+* You should have received a copy of the GNU General Public License
+* along with Synsip.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include <cstdlib>
 #include <syslog.h>
@@ -26,6 +43,7 @@
 #include "Synthesis_manager.h"
 #include "Call_manager.h"
 #include "Timeout_manager.h"
+#include "Config_parser.h"
 
 using namespace std;
 
@@ -48,7 +66,6 @@ void sigHandler(int sig) {
 void read_config(synsip_config *config) {
 	//Example of hardcoded config. Not real one.
     config->listen_port = 7801;
-    config->listen_port_local = 6800;
     strcpy(config->registrar, "192.168.0.121");
     strcpy(config->user, "91");
     strcpy(config->password, "secret");
@@ -73,7 +90,11 @@ int main(int argc, char** argv) {
     // Configuration
     synsip_config *config;
     config = (synsip_config*) malloc(sizeof (synsip_config));
-    read_config(config);
+    //read_config(config);
+    Config_parser parser;
+    parser.parse_config(*config, argv[1]);
+    
+    exit(0);
 
 
 
@@ -103,8 +124,6 @@ int main(int argc, char** argv) {
 
     // Create the network manager from automate
     network_manager = new Network_manager(message_manager);
-    // Create the  network manager from local
-    network_manager_local = new Network_manager(message_manager);
 
     if (!message_manager->init(config)) {
         syslog(LOG_ERR, "Cannot start message thread");
@@ -113,24 +132,9 @@ int main(int argc, char** argv) {
 
     // if two network create
     if (network_manager->create_connection(config->listen_port)) {
-        if (network_manager_local->create_connection(config->listen_port_local)) {
-            if (!network_manager->wait_connection()) {
-                syslog(LOG_INFO, "Cannot wait connection");
-            }
-
-            if (!network_manager_local->wait_connection()) {
-                syslog(LOG_INFO, "Cannot wait connection local");
-            }
-        } else {
-            sleep(2); // Wait for the other process
-            delete network_manager_local;
-            delete network_manager;
-            syslog(LOG_ERR, "Cannot create network connection");
-            endValue = EXIT_FAILURE;
-        }
+		syslog(LOG_INFO, "Networks create");
     } else {
         sleep(2); // Wait for the other process
-        delete network_manager_local;
         delete network_manager;
         syslog(LOG_ERR, "Cannot create network connection");
         endValue = EXIT_FAILURE;
@@ -139,8 +143,7 @@ int main(int argc, char** argv) {
         free(config);
         return endValue;
     }
-    syslog(LOG_INFO, "Networks create");
-
+    
     network_manager->join();
 
     syslog(LOG_INFO, "Program ended");

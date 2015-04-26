@@ -47,7 +47,7 @@ pjsua_call_id HP_manager::call(char* num) {
     pj_status_t status;
     pjsua_call_id call_id = -1;
     pj_str_t uri_arg;
-	num = "sip:92@192.168.X.XXX";
+	num = "sip:92@192.168.1.80";
     uri_arg.ptr = num;
     uri_arg.slen = strlen(num);
     std::cout << "Num is: " << num << std::endl;

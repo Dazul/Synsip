@@ -23,23 +23,16 @@
 */
 
 #pragma once
+#include "config.h"
 
-typedef struct {
-    char registrar[50]; // The address of the registrar (SIP telephone centrale)
-    char call_target[50]; // The address of the registrar to call (in case of use of sip trunk)
-    char user[30]; // The username
-    char password[50]; // The userpassword
-    int sip_port; // The SIP port
-    int max_calls; // The number of maximum call
-    char script_path[30]; // The directories script
-    char scriptfr_name[30]; // The script's name to do French
-    char scriptde_name[30]; // The script's name to de German
-    int listen_port; // The port to connect from the automate
-} synsip_config;
+class Config_parser {
+public:
+	Config_parser();
+	
+	//Return 0 if ok, -1 if error occured.
+	int parse_config(synsip_config& config, string config_file);
+	
+	~Config_parser();
+};
 
-typedef struct {
-    char gare[50];
-} message_db;
-
-/* CONFIG_H */
-
+/* CONFIG_PARSER_H */
