@@ -163,7 +163,7 @@ bool Message_manager::generate_annonce(char message[]) {
         char commande[300];
         char newmessage[256];
         sprintf(newmessage, "%s|%s||%s|%s|%s|%s|%s|%s|%d|", annonce[0], annonce[1], annonce[3], annonce[4], annonce[5], annonce[6], annonce[7], annonce[8], id);
-        sprintf(commande, "echo \"%s '%s' %d\" | at %s %s/%s/%s", "send", newmessage, config->listen_port_local, time.c_str(), month.c_str(), day.c_str(), year.c_str());
+        sprintf(commande, "echo \"%s '%s' %d\" | at %s %s/%s/%s", "send", newmessage, time.c_str(), month.c_str(), day.c_str(), year.c_str());
         cout << commande << endl;
         if (system(commande) == -1) {
             syslog(LOG_ERR, "Cannot execute delay commande : %s", strerror(errno));

@@ -24,6 +24,9 @@
 
 #pragma once
 #include "config.h"
+#include <string>
+
+using namespace std;
 
 class Config_parser {
 public:

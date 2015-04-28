@@ -25,13 +25,13 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <string>
+#include "Config_parser.h"
 
 using namespace std;
 
-Config_pasrser::Config_parser(){}
+Config_parser::Config_parser(){}
 
-int parse_config(synsip_config& config, string config_file){
+int Config_parser::parse_config(synsip_config& config, string config_file){
 	ifstream fin(config_file);
 	string line;
 	while (getline(fin, line)) {
@@ -70,4 +70,4 @@ int parse_config(synsip_config& config, string config_file){
 	}
 }
 
-Config_pasrser::~Config_parser(){}
+Config_parser::~Config_parser(){}
