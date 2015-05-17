@@ -341,7 +341,7 @@ void* Call_manager::run() {
             pjsua_transport_config cfg;
             pjsua_transport_config_default(&cfg);
             /** TODO change */
-            cfg.port = 5061; //config->sip_port;
+            cfg.port = config->sip_port;
             status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, NULL);
             if (status != PJ_SUCCESS) {
                 syslog(LOG_ERR, "Error creating pjsua transport : %d", status);
@@ -453,7 +453,7 @@ void Call_manager::manage_broadcast_call(str_annonce annonce, pjsua_acc_id acc_i
 
         now = time(0);
         mycall_info mci;
-        mci.hp_manager = new HP_manager(acc_id);
+        mci.hp_manager = new HP_manager(acc_id, this->config);
         strcpy(mci.audio_file, annonce.audio_file);
         mci.bd_id = annonce.bd_id;
         mci.broadast = true;
@@ -528,7 +528,7 @@ void Call_manager::manage_individual_call(str_annonce annonce, pjsua_acc_id acc_
     now = time(0);
     char *number = annonce.phone_number;
     mycall_info mci;
-    mci.hp_manager = new HP_manager(acc_id);
+    mci.hp_manager = new HP_manager(acc_id, this->config);
     strcpy(mci.audio_file, annonce.audio_file);
     mci.bd_id = annonce.bd_id;
     mci.broadast = false;

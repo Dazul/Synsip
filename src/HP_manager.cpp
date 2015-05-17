@@ -29,10 +29,13 @@
 #include <iostream>
 #include "HP_manager.h"
 #include "Call_manager.h"
+#include "config.h"
+
 sem_t wait_file_end;
 sem_t wait_to_play_file;
 
-HP_manager::HP_manager(pjsua_acc_id acc_id) {
+HP_manager::HP_manager(pjsua_acc_id acc_id, synsip_config *config) {
+	this->config = config;
     this->acc_id = acc_id;
 
     sem_init(&wait_file_end, 0, 0);
@@ -47,11 +50,15 @@ pjsua_call_id HP_manager::call(char* num) {
     pj_status_t status;
     pjsua_call_id call_id = -1;
     pj_str_t uri_arg;
-	num = "sip:92@192.168.1.80";
-    uri_arg.ptr = num;
-    uri_arg.slen = strlen(num);
-    std::cout << "Num is: " << num << std::endl;
-    std::cout << "Len is: " << strlen(num) << std::endl;
+    //TODO constructe the number
+    char num_uri[30];
+	memset(num_uri, 0, 30);
+    strcat(num_uri, "sip:");
+    strcat(num_uri, num);
+    strcat(num_uri, "@");
+    strcat(num_uri, config->registrar);
+    uri_arg.ptr = num_uri;
+    uri_arg.slen = strlen(num_uri);
     // make the call
 
     status = pjsua_call_make_call(acc_id, &uri_arg, 0, NULL, NULL, &call_id);
@@ -74,7 +81,6 @@ static PJ_DEF(pj_status_t) on_pjsua_wav_file_end_callback(pjmedia_port* media_po
     pj_pool_release(eof_data->pool);
 
     printf("call id %d, end play file\n", eof_data->call_id);
-
     return 1;
 }
 
@@ -85,10 +91,13 @@ int HP_manager::play_file(pjsua_call_id call_id, char* audfile) { //
         return -1;
     }
     pj_str_t file;
-    audfile = "/home/user/SynSipTest/90.wav";
-    std::cout << "File is: " << audfile << std::endl;
-    file.ptr = audfile;
-    file.slen = strlen(audfile);
+    //TODO use config for path
+    char audfile_full[255];
+	memset(audfile_full, 0, 255);
+    strcat(audfile_full, config->script_path);
+    strcat(audfile_full, audfile);
+    file.ptr = audfile_full;
+    file.slen = strlen(audfile_full);
 
     pjsua_player_id player_id;
     pj_status_t status;

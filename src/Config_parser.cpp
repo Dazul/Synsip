@@ -38,34 +38,22 @@ int Config_parser::parse_config(synsip_config& config, string config_file){
 		istringstream sin(line.substr(line.find("=") + 1));
 		if (line.find("registrar") != -1){
 			sin >> config.registrar;
-			cout << config.registrar << endl;
-		} else if (line.find("call_target") != -1) {
-			sin >> config.call_target;
-			cout << config.call_target << endl;
-		} else if (line.find("user") != -1) {
+		} else if (line.find("sip_user") != -1) {
 			sin >> config.user;
-			cout << config.user << endl;
 		} else if (line.find("password") != -1){
 			sin >> config.password;
-			cout << config.password << endl;
 		} else if (line.find("sip_port") != -1){
 			sin >> config.sip_port;
-			cout << config.sip_port << endl;
 		} else if (line.find("max_calls") != -1){
 			sin >> config.max_calls;
-			cout << config.max_calls << endl;
 		} else if (line.find("script_path") != -1){
 			sin >> config.script_path;
-			cout << config.script_path << endl;
 		} else if (line.find("scriptfr_name") != -1){
 			sin >> config.scriptfr_name;
-			cout << config.scriptfr_name << endl;
 		} else if (line.find("scriptde_name") != -1){
 			sin >> config.scriptde_name;
-			cout << config.scriptde_name << endl;
 		} else if (line.find("listen_port") != -1){
 			sin >> config.listen_port;
-			cout << config.listen_port << endl;
 		}
 	}
 }

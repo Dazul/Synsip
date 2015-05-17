@@ -26,6 +26,7 @@
 
 #include <pjsua-lib/pjsua.h>
 #include "Thread.h"
+#include "config.h"
 
 struct pjsua_player_eof_data {
     pj_pool_t *pool;
@@ -35,7 +36,7 @@ struct pjsua_player_eof_data {
 
 class HP_manager : public Thread {
 public:
-    HP_manager(pjsua_acc_id acc_id);
+    HP_manager(pjsua_acc_id acc_id, synsip_config *config);
     pjsua_call_id call(char* number);
     bool play_audio_file(pjsua_call_id call_id, char* audio_file);
     
@@ -45,6 +46,7 @@ public:
     
 private:
     pjsua_acc_id acc_id;
+    synsip_config *config;
     int play_file(pjsua_call_id call_id, char* audfile);
     void *run();
 };

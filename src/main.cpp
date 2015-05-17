@@ -60,29 +60,17 @@ void sigHandler(int sig) {
 }
 
 /**
- * Get configuration in configuration file
- * @param config
- */
-void read_config(synsip_config *config) {
-	//Example of hardcoded config. Not real one.
-    config->listen_port = 7801;
-    strcpy(config->registrar, "192.168.0.121");
-    strcpy(config->user, "91");
-    strcpy(config->password, "secret");
-    config->max_calls = 4;
-    strcpy(config->script_path, "/home/user/SynSipTest");
-    strcpy(config->scriptfr_name, "annonce.sh");
-    strcpy(config->scriptde_name, "annonce.sh");
-    config->sip_port = 5061; // default port
-}
-
-/**
  * The first method call
  * 
  */
 int main(int argc, char** argv) {
     int endValue = 0;
     cout << "start" << endl;
+    
+    if(argc < 2){
+    	cout << "Usage: ./synsip config_file" << endl;
+    	return EXIT_FAILURE;
+    }
 
     openlog(NULL, 0, LOG_USER);
     syslog(LOG_INFO, "Program start");
@@ -93,9 +81,6 @@ int main(int argc, char** argv) {
     //read_config(config);
     Config_parser parser;
     parser.parse_config(*config, argv[1]);
-    
-    exit(0);
-
 
 
     syslog(LOG_INFO, "*** New instanace starting");
@@ -133,6 +118,9 @@ int main(int argc, char** argv) {
     // if two network create
     if (network_manager->create_connection(config->listen_port)) {
 		syslog(LOG_INFO, "Networks create");
+		if (!network_manager->wait_connection()) {
+			syslog(LOG_INFO, "Cannot wait connection");
+		}
     } else {
         sleep(2); // Wait for the other process
         delete network_manager;
