@@ -539,10 +539,11 @@ void Call_manager::manage_individual_call(str_annonce annonce, pjsua_acc_id acc_
 
     // if no state exist for this number
     char num[] = {number[4], number[5], '\0'};
-    int n = atoi(num);
+    int n = atoi(number);
+    printf("number: %s, num: %s, n: %d\n", number, num, n);
     mtx_state_access.lock();
     if (call_mstate.find(n) == call_mstate.end()) {
-        printf("Number not in call_mstate\n");
+        printf("Number not in call_mstate %d\n", n);
         pjsua_call_id call_id = mci.hp_manager->call(mci.number);
         if (call_id == -1) {
             syslog(LOG_INFO, "Error HP");
@@ -553,13 +554,13 @@ void Call_manager::manage_individual_call(str_annonce annonce, pjsua_acc_id acc_
             cid_number[call_id % MAX_SIZE] = n;
         }
     } else {
-        printf("Number already in call_mstate\n");
+        printf("Number already in call_mstate %d\n", n);
         mycall_info old_mci = call_mstate[n];
 
         if (old_mci.call_status == STAT_DISPO) {
             pjsua_call_id call_id = mci.hp_manager->call(mci.number);
             if (call_id == -1) {
-                syslog(LOG_INFO, "Error HP");
+                syslog(LOG_INFO, "Error HP, call id = -1.");
             } else {
                 mci.call_id = call_id;
                 call_mstate.at(n) = mci;
@@ -567,7 +568,7 @@ void Call_manager::manage_individual_call(str_annonce annonce, pjsua_acc_id acc_
             }
         } else {
             // can wait here before retry call the hp
-            syslog(LOG_INFO, "Error HP");
+            syslog(LOG_INFO, "Error HP, STATE is not dispo.");
         }
     }
     mtx_state_access.unlock();
