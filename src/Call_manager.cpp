@@ -62,6 +62,7 @@ using namespace std;
 
 sem_t wait_call_status_broadcast;
 sem_t wait_call_status_one;
+sem_t wait_max_calls;
 sem_t wait_destroy_player;
 sem_t play_audio_file;
 
@@ -197,6 +198,7 @@ void change_call_stat(pjsua_call_id call_id, int status) {
             newmci.call_status = STAT_DISPO;
             // check if broadcast
             printf("Status befor disconnected : %d\n", mci.call_status);
+            sem_post(&wait_max_calls);
             if (mci.call_status < STAT_CONFIRME || mci.call_status == STAT_TIMEOUT) {
                 char err[50];
 
@@ -278,7 +280,7 @@ static void on_call_media_state(pjsua_call_id call_id) {
 
 bool Call_manager::init(synsip_config *config) {
     this->config = config;
-
+	sem_init(&wait_max_calls, 0, config->max_calls);
     if (this->start() == -1) {
 
         return false;
@@ -407,7 +409,8 @@ void* Call_manager::run() {
          */
         while (true) {
             // TODO Check if account registered
-            printf("Wait annonce\n");
+            sem_wait(&wait_max_calls);
+            sleep(1);
             unique_lock<mutex> mlock(mtx_ann_queue);
             while (annonce_queue.empty()) {
                 cond_new_annonce.wait(mlock);
@@ -416,9 +419,8 @@ void* Call_manager::run() {
             str_annonce annonce = annonce_queue.front();
             annonce_queue.pop();
             mlock.unlock();
-
+            
             pjsua_acc_set_registration(acc_id, 1); // verify if account is register
-
             vector<string> VecStr;
             int nbrPhone = SplitNumber(VecStr, annonce.phone_number, ','); // split the number
 
@@ -538,9 +540,7 @@ void Call_manager::manage_individual_call(str_annonce annonce, pjsua_acc_id acc_
     strcpy(mci.number, number);
 
     // if no state exist for this number
-    char num[] = {number[4], number[5], '\0'};
     int n = atoi(number);
-    printf("number: %s, num: %s, n: %d\n", number, num, n);
     mtx_state_access.lock();
     if (call_mstate.find(n) == call_mstate.end()) {
         printf("Number not in call_mstate %d\n", n);
@@ -597,12 +597,12 @@ void Call_manager::timeout(int t_now) {
  * @param call_id
  */
 bool Call_manager::end_a_call(pjsua_call_id call_id) {
+	printf("Ending call\n");
     int number = cid_number[call_id % MAX_SIZE];
     mycall_info mci = call_mstate[number];
     mci.call_status = STAT_TIMEOUT;
     call_mstate.at(number) = mci;
     mci.hp_manager->hangup_hp(call_id);
-
     return true;
 }
 
