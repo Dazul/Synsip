@@ -1,4 +1,4 @@
-AC_INIT(synsip, 0.1.0)
+AC_INIT(synsip, 0.2.0)
 AC_CONFIG_SRCDIR(src/main.cpp)
 AM_INIT_AUTOMAKE
 

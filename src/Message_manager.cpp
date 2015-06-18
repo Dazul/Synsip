@@ -126,117 +126,46 @@ bool Message_manager::generate_annonce(char message[]) {
     sprintf(receive_date, "%d.%d.%d", now->tm_mday, (now->tm_mon + 1), (now->tm_year + 1900)); // month start at 0
 
     string msg = message; // convert to string
-    const char* annonce[9]; // 0 type, 1 number, 2 diffusion, 3 message, 4 voie, 5 train, 6 gare, 7 depart, 8 language
+    const char* annonce[4]; // 0 number, 1 message, 2 language
 
     id = -1;
     printf("Time %s, date %s\n", receive_time, receive_date);
 
     vector<string> VecStr;
     int nbTabl = Split(VecStr, msg, '|'); // split the annonce
-    if (nbTabl != 10) { // 10 size of message standard, 11 size of message delayed
-        if (nbTabl != 11) {
-            syslog(LOG_ERR, "Cannot read message : syntax error");
-            return false;
-        }
-        id = atoi(VecStr[9].c_str()); // Get the id
+    if (nbTabl != 4) { // Message Error
+        syslog(LOG_ERR, "Cannot read message : syntax error");
+        id = atoi(VecStr[3].c_str()); // Get the id
     }
 
-    for (int i = 0; i < 9; ++i) {
+    for (int i = 0; i < 3; ++i) {
         annonce[i] = VecStr[i].c_str();
-
-    }
-
-    // Check if is a delayed message
-    if (strcmp(annonce[2], "") != 0) {
-
-        vector<string> datetime;
-        string dt = annonce[2];
-        //split date
-        int size = Split(datetime, dt, '-');
-        string date = datetime[0];
-        vector<string> d;
-        size = Split(d, date, '.');
-        string day = d[0];
-        string month = d[1];
-        string year = d[2];
-        string time = datetime[1];
-        char commande[300];
-        char newmessage[256];
-        sprintf(newmessage, "%s|%s||%s|%s|%s|%s|%s|%s|%d|", annonce[0], annonce[1], annonce[3], annonce[4], annonce[5], annonce[6], annonce[7], annonce[8], id);
-        sprintf(commande, "echo \"%s '%s' %d\" | at %s %s/%s/%s", "send", newmessage, time.c_str(), month.c_str(), day.c_str(), year.c_str());
-        cout << commande << endl;
-        if (system(commande) == -1) {
-            syslog(LOG_ERR, "Cannot execute delay commande : %s", strerror(errno));
-        }
-
-        return true;
     }
 
     // Generate the advertisement depending the type
     // Check language
     int language = -1; // No language
-    if (strcmp(annonce[8], "FR") == 0) {
-        language = 0;
-    } else if (strcmp(annonce[8], "DE") == 0) {
-        language = 1;
+    if (strcmp(annonce[2], "FR") == 0) {
+        language = lang_fr;
+    } else if (strcmp(annonce[2], "DE") == 0) {
+        language = lang_de;
     } else {
         syslog(LOG_ERR, "Language not know");
         return false;
     }
 
-
-    // Generate the advertisement
-    char advertisement[512];
-    if (strcmp(annonce[0], "1") == 0) { // Type 1, personnel message
-        cout << "Type 1" << endl;
-        sprintf(advertisement, "%s", annonce[3]);
-
-    } else if (strcmp(annonce[0], "2") == 0) { // message type 2, standard advertisement
-        if (language == 0) {
-            sprintf(advertisement, "Voie, %s, Entrée du train, %s. Ce train dessert %s.", annonce[4], annonce[5], annonce[6]);
-        } else if (language == 1) {
-            sprintf(advertisement, "Gleis, %s, Einfahrt des Zuges, %s. Der Zug fährt nach %s.", annonce[4], annonce[5], annonce[6]);
-        }
-        if (strcmp(annonce[7], "") != 0) {
-            if (language == 0) {
-                sprintf(advertisement, "%s Départ %s", advertisement, annonce[7]);
-            } else if (language == 1) {
-                sprintf(advertisement, "%s Abfahrt um %s", advertisement, annonce[7]);
-            }
-        }
-    } else if (strcmp(annonce[0], "3") == 0) { // message type 3, secure advertisement
-        if (language == 0) {
-            sprintf(advertisement, "Attention, sur voie %s.", annonce[4]);
-        } else if (language == 1) {
-            sprintf(advertisement, "Achtung, auf Gleis %s.", annonce[4]);
-        }
-        if (strcmp(annonce[5], "") != 0) {
-            if (language == 0) {
-                sprintf(advertisement, "%s Entrée du train %s. %s.", advertisement, annonce[5], annonce[3]);
-            } else if (language == 1) {
-                sprintf(advertisement, "%s Einfahrt des Zuges %s. %s.", advertisement, annonce[5], annonce[3]);
-            }
-        } else {
-            sprintf(advertisement, "%s %s", advertisement, annonce[3]);
-
-        }
-    } else {
-        syslog(LOG_INFO, "Message type %s no exist", annonce[0]);
-        return false;
-    }
-
-    int fileName = synthesis_manager->synthesired(advertisement, language);
+    int fileName = synthesis_manager->synthesired(annonce[1], language);
     if (fileName == -1) {
         return false;
     }
 
-    syslog(LOG_INFO, "Message: %s, call %s", advertisement, annonce[1]);
+    syslog(LOG_INFO, "Message: %s, call %s", annonce[1], annonce[0]);
     str_annonce strann;
     char audiofile[10];
     sprintf(audiofile, "%d.wav", fileName);
     printf("audio file : %s\n", audiofile);
     strcpy(strann.audio_file, audiofile);
-    strcpy(strann.phone_number, annonce[1]);
+    strcpy(strann.phone_number, annonce[0]);
     strann.bd_id = id;
 
     if (call_manager->make_call(strann)) {

@@ -74,7 +74,6 @@ private:
     synsip_config *config;
     bool end_a_call(pjsua_call_id call_id);
     void manage_individual_call(str_annonce annonce, pjsua_acc_id);
-    void manage_broadcast_call(str_annonce annonce, pjsua_acc_id acc_id);
     
 };
 

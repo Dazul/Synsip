@@ -206,10 +206,6 @@ void change_call_stat(pjsua_call_id call_id, int status) {
                 if (mci.broadast) {
                     play_file_broadcast(call_id, status);
                 }
-            } else {
-                //TODO db_manager->updatemessage(HISTORIQUE, newmci.bd_id);
-                // delete file
-                // delete_file(newmci.audio_file);
             }
             break;
     }
@@ -342,7 +338,6 @@ void* Call_manager::run() {
         {
             pjsua_transport_config cfg;
             pjsua_transport_config_default(&cfg);
-            /** TODO change */
             cfg.port = config->sip_port;
             status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, NULL);
             if (status != PJ_SUCCESS) {
@@ -383,7 +378,7 @@ void* Call_manager::run() {
             cfg.id = pj_str(id);
             cfg.reg_uri = pj_str(reg);
             cfg.cred_count = 1;
-            cfg.cred_info[0].realm = pj_str("*");
+            cfg.cred_info[0].realm = pj_str((char*) "*");
             //cfg.cred_info[0].scheme = pj_str((char *)"digest");
             cfg.cred_info[0].username = pj_str(config->user);
             cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
@@ -421,103 +416,13 @@ void* Call_manager::run() {
             mlock.unlock();
             
             pjsua_acc_set_registration(acc_id, 1); // verify if account is register
-            vector<string> VecStr;
-            int nbrPhone = SplitNumber(VecStr, annonce.phone_number, ','); // split the number
 
-            // no broadcast call
-            if (nbrPhone == 1) {
-                manage_individual_call(annonce, acc_id);
-            } else { // broacast call
-                manage_broadcast_call(annonce, acc_id);
-            }
-
+            manage_individual_call(annonce, acc_id);
         }
     }
 
     sleep(1);
     pjsua_destroy();
-}
-
-/**
- * 
- * @param annonce
- * @param acc_id
- */
-void Call_manager::manage_broadcast_call(str_annonce annonce, pjsua_acc_id acc_id) {
-    vector<string> VecStr;
-    int nbrPhone = SplitNumber(VecStr, annonce.phone_number, ','); // split the number
-    const char* number;
-    pjsua_call_id call_id_broadcast[nbrPhone];
-    int k = 0; // use for call_id_broadcast[]
-    mtx_state_access.lock();
-    for (int i = 0; i < nbrPhone; i++) {
-        number = VecStr[i].c_str();
-
-        now = time(0);
-        mycall_info mci;
-        mci.hp_manager = new HP_manager(acc_id, this->config);
-        strcpy(mci.audio_file, annonce.audio_file);
-        mci.bd_id = annonce.bd_id;
-        mci.broadast = true;
-        mci.call_status = STAT_MAKECALL;
-        mci.original_annonce = annonce;
-        mci.timeout = now + TIMEOUT;
-        strcpy(mci.number, number);
-        mci.nbr_of_other_call_id = 0;
-        //---
-
-        // if no state exist for this number
-        char num[] = {number[4], number[5], '\0'};
-        int n = atoi(num);
-
-        if (call_mstate.find(n) == call_mstate.end()) { // not in mcall_state
-            pjsua_call_id call_id = mci.hp_manager->call(mci.number);
-            if (call_id == -1) {
-                // Here remake test after any time
-                syslog(LOG_INFO, "Error HP");
-            } else {
-                mci.call_id = call_id;
-                call_mstate[n] = mci;
-                cid_number[call_id % MAX_SIZE] = n;
-                call_id_broadcast[k] = call_id;
-                k++;
-            }
-        } else {
-            mycall_info old_mci = call_mstate[n];
-            if (old_mci.call_status == STAT_DISPO) {
-                pjsua_call_id call_id = mci.hp_manager->call(mci.number);
-                if (call_id == -1) {
-                    // Here remake test after any time
-                    syslog(LOG_INFO, "Error HP");
-                } else {
-                    mci.call_id = call_id;
-                    call_mstate.at(n) = mci;
-                    cid_number[call_id % MAX_SIZE] = n;
-                    call_id_broadcast[k] = call_id;
-                    k++;
-                }
-            }
-        }
-
-    }
-
-    for (int i = 0; i < k; i++) {
-        int number = cid_number[call_id_broadcast[i]];
-        mycall_info mci = call_mstate[number];
-        mycall_info newmci = mci;
-
-        newmci.nbr_of_other_call_id = k - 1;
-        call_mstate[call_id_broadcast[i]].nbr_of_other_call_id = k - 1;
-        int y = 0;
-        for (int j = 0; j < k; j++) {
-            if (call_id_broadcast[i] != call_id_broadcast[j]) {
-                newmci.other_call_id[y] = call_id_broadcast[j];
-                y++;
-            }
-        }
-        call_mstate.at(number) = newmci;
-    }
-    mtx_state_access.unlock();
 }
 
 /**
