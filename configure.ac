@@ -28,8 +28,6 @@ if test "$C11" = "NO"; then
 	AX_CHECK_COMPILE_FLAG([-std=c++0x], [CXXFLAGS="$CXXFLAGS -std=c++0x"], echo "C++11 or C++0x mandatory"; exit)
 fi
 
-CXXFLAGS="$CXXFLAGS -g"
-
 AC_PROG_CXX
 AC_PROG_CC
 
