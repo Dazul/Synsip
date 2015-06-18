@@ -3,8 +3,9 @@
 * 
 * Copyright (C) 2014  EIA-FR (https://eia-fr.ch/)
 * author: Fabien Yerly
+* inspired by: http://vichargrave.com/java-style-thread-class-in-c/
 * 
-* Copyright (C) 2014  Luis Domingues
+* Copyright (C) 2014-2015  Luis Domingues
 * 
 * This file is part of Synsip.
 * 
@@ -24,7 +25,6 @@
 
 #include "Thread.h"
 
-
 using namespace std;
 
 Thread::Thread() : m_tid(0), m_running(0), m_detached(0) {
@@ -42,7 +42,8 @@ Thread::~Thread() {
 static void* runThread(void* arg);
 
 int Thread::start() {
-    int result = pthread_create(&m_tid, NULL, runThread, this);
+    int result=-1;
+    result = pthread_create(&m_tid, NULL, runThread, this);
     if (result == 0) {
         m_running = 1;
     }

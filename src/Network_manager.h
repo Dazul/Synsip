@@ -4,7 +4,7 @@
 * Copyright (C) 2014  EIA-FR (https://eia-fr.ch/)
 * author: Fabien Yerly
 * 
-* Copyright (C) 2014  Luis Domingues
+* Copyright (C) 2014-2015  Luis Domingues
 * 
 * This file is part of Synsip.
 * 
@@ -22,38 +22,32 @@
 * along with Synsip.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef NETWORK_H
-#define	NETWORK_H
+#pragma once
 
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/types.h>
-#include <syslog.h>
 
 #include "Thread.h"
+#include "config.h"
 #include "Message_manager.h"
-#include "include.h"
 
-class Network_manager : public Thread{
+class Network_manager : public Thread {
 public:
-    Network_manager(int file, synsip_config *config);
-
+    Network_manager(Message_manager *message_manager);
     virtual ~Network_manager();
-    void* run();
 
-    bool createConnection();
-    bool waitMessage();
-    bool closeConnection();
-
-    bool canReceivce;
+    bool create_connection(int port);
+    bool wait_connection();
 
 private:
-    int socket_desc, client_sock, c;
+    void *run();
+    void transfer_message(char message[]);
+
+    int server_socket, client_socket, sockadd_size;
     struct sockaddr_in server, client;
-    int port;
-    synsip_config *config;
+    
     Message_manager *message_manager;
 };
 
-#endif	/* NETWORK_H */
-
+/* NETWORK_MANAGER_H */

@@ -4,7 +4,7 @@
 * Copyright (C) 2014  EIA-FR (https://eia-fr.ch/)
 * author: Fabien Yerly
 * 
-* Copyright (C) 2014  Luis Domingues
+* Copyright (C) 2014-2015  Luis Domingues
 * 
 * This file is part of Synsip.
 * 
@@ -22,9 +22,7 @@
 * along with Synsip.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef THREAD_H
-#define	THREAD_H
-
+#pragma once
 
 #include <pthread.h>
  
@@ -47,5 +45,5 @@ class Thread
     int        m_detached;
 };
 
-#endif	/* THREAD_H */
+/* THREAD_H */
 

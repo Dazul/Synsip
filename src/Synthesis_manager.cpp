@@ -4,7 +4,7 @@
 * Copyright (C) 2014  EIA-FR (https://eia-fr.ch/)
 * author: Fabien Yerly
 * 
-* Copyright (C) 2014  Luis Domingues
+* Copyright (C) 2014-2015  Luis Domingues
 * 
 * This file is part of Synsip.
 * 
@@ -21,46 +21,60 @@
 * You should have received a copy of the GNU General Public License
 * along with Synsip.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "Synthesis_manager.h"
+
+#include <sys/syslog.h>
+#include <string.h>
+#include <errno.h>
 #include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h>
 #include <arpa/nameser_compat.h>
+#include "Synthesis_manager.h"
 
-using namespace std;
-
-Synthesis_manager::Synthesis_manager(synsip_config *config) {
-    //cout << "Create synthesize" << endl;
-    srand (time(NULL));
-    this->config = config;
+Synthesis_manager::Synthesis_manager() {
 }
 
-int Synthesis_manager::synthesired(char* annonce) { // message=0x7ffff6fd4d90 \"message test\\r\\n\"
+bool Synthesis_manager::init(synsip_config* config) {
+    this->config = config;
+    return true;
+}
+
+/**
+ * 
+ * @param annonce
+ * @param language 0 French, 1 German
+ * @return -1 if error
+ */
+int Synthesis_manager::synthesired(char* annonce, int language) {
     int fileName = rand() % 100 + 1;
-
-    // Text file
+    // text file
     char commandefile[sizeof (annonce) + 256];
-    sprintf(commandefile, "echo \"%s\" > /%s/%d", annonce, config->script_path, fileName); // generate command
-    //cout << commandefile << endl;
-    system(commandefile); // execute command
+    sprintf(commandefile, "echo \"%s\" > %s/%d", annonce, config->script_path, fileName);
+    if (system(commandefile) == -1) {
+        syslog(LOG_ERR, "Cannot create the annonce file, error cmd system : %s", strerror(errno));
+        return -1;
+    }
 
-	
-    char script[256];
-    sprintf(script, "%s/%s %d %s", config->script_path, config->script_name, fileName, config->script_path);
-
-
-    //cout << "commande : " << script << endl;
-
-    system(script);
-    //system("echo message > text.txt");
+    char commandescript[256];
+    if (language == 0) {
+        sprintf(commandescript, "%s/%s %d %s", config->script_path, config->scriptfr_name, fileName, config->script_path);
+    }
+    else if (language = 1) {
+        sprintf(commandescript, "%s/%s %d %s", config->script_path, config->scriptde_name, fileName, config->script_path);
+    }
+    else{
+        syslog(LOG_ERR, "Cannot make synthesis script, no language");
+        return -1;
+    }
+    
+    if(system(commandescript) == -1){
+        syslog(LOG_ERR, "Cannot make the audio file");
+        return -1;
+    }
     usleep(1000);
-    /*
-    char *playCommande = new char[14];
-    sprintf(playCommande, "aplay %d.wav", fileName);
-    system(playCommande);
-     */
+    
     return fileName;
 }
 

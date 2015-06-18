@@ -4,7 +4,7 @@
 * Copyright (C) 2014  EIA-FR (https://eia-fr.ch/)
 * author: Fabien Yerly
 * 
-* Copyright (C) 2014  Luis Domingues
+* Copyright (C) 2014-2015  Luis Domingues
 * 
 * This file is part of Synsip.
 * 
@@ -23,6 +23,9 @@
 */
 
 #include "Network_manager.h"
+#include <syslog.h>
+#include <errno.h>
+
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,116 +35,106 @@
 
 using namespace std;
 
-void* Network_manager::run() {
-    
-    while(true){
-    	//Listen
-    	listen(socket_desc, 3);
-	
-    	//Accept and incoming connection
-    	syslog(LOG_INFO, "Waiting for incoming connections...");
-    	c = sizeof (struct sockaddr_in);
+#define MSG_SIZE 512 // the max message size (512 char)
 
-		client_sock = accept(socket_desc, (struct sockaddr *) &client, (socklen_t*) & c);
-		syslog(LOG_INFO, "Connection accepted from %s", inet_ntoa(client.sin_addr));
-
-		//Now join the thread , so that we dont terminate before the thread
-		//pthread_join( thread_id , NULL);
-
-		//puts(inet_ntoa(client.sin_addr));
-
-
-		if (client_sock < 0) {
-		    syslog(LOG_ERR, "accept failed");
-		    return NULL;
-		}
-
-		char returnMessage[] = {"Connection to server ready\n"};
-		write(client_sock, returnMessage, strlen(returnMessage));
-
-		int read_size;
-		char automate_message[256];
-		memset(automate_message, 0, 256);
-		//Receive a message from client
-		while (true) {
-
-		    read_size = read(client_sock, automate_message, sizeof(automate_message));
-		    if (read_size > 0) {
-		        //call the message generator
-		        message_manager->generateMessage(read_size, automate_message);
-				/*cout << "Received message: " << automate_message << endl;
-				if(strcmp(automate_message, "exit") == 0){
-					cout << "Detach" << endl;
-		        	this->detach();
-		    	}*/
-			
-		        //clear the message buffer
-		        memset(automate_message, 0, 256);
-		    }
-		    if (read_size == 0) {
-    			syslog(LOG_INFO, "Client disconnected");
-		        break;
-		    } else if (read_size == -1) {
-		        //puts("No message");
-		        return NULL;
-		    }
-
-		}
-	}
-    return NULL;
+Network_manager::Network_manager(Message_manager *message_manager) {
+    cout << "Network_manager create" << endl;
+    this->message_manager = message_manager;
 }
 
-Network_manager::Network_manager(int file, synsip_config *config) {
-    //TODO Debug
-    //cout << "Network create" << endl;
-    this->config = config;
-    port = config->listen_port;
-    canReceivce = true;
-    message_manager = new Message_manager(file, config);
-}
-
-
-bool Network_manager::createConnection() {
-    //Create socket
-    socket_desc = socket(AF_INET, SOCK_STREAM, 0);
-    if (socket_desc == -1) {
-        //printf("Could not create socket");
+/**
+ * Create the network connection
+ * @return true if socket and bind ready
+ *         false else
+ */
+bool Network_manager::create_connection(int port) {
+    // Create the socket
+    server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_socket == -1) {
+        syslog(LOG_ERR, "Server socket error : %s", strerror(errno));
+        return false;
     }
-    //TODO Debug
-    //puts("Socket created");
 
     //Prepare the sockaddr_in structure
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = INADDR_ANY;
     server.sin_port = htons(port);
 
-    //Bind
-    if (bind(socket_desc, (struct sockaddr *) &server, sizeof (server)) < 0) {
-        //print the error message
-        syslog(LOG_ERR, "bind failed. Error");
+    //Bind the socket
+    if (bind(server_socket, (struct sockaddr *) &server, sizeof (server)) < 0) {
+        //Print the error message
+        syslog(LOG_ERR, "Bind error : %s", strerror(errno));
         return false;
     }
-    //TODO Debug
-    //puts("bind done");
 
     return true;
 }
 
-bool Network_manager::waitMessage() {
-    this->start();
+/**
+ * Start and join the thread to wait a connection
+ * @return true if start and join
+ *         false else
+ */
+bool Network_manager::wait_connection() {
+    if (this->start() < 0) {
+        return false;
+    }
+    cout << "Network_manager wait connection" << endl;
     return true;
 }
 
-bool Network_manager::closeConnection() {
-    close(socket_desc);
-    close(client_sock);
-    close(c);
-    return true;
+/**
+ * The thread. Listen on connection, accept connection
+ * @return 
+ */
+void* Network_manager::run() {
+    while (true) {
+        // Listen of connection
+        int result = listen(server_socket, 1); // 3 connection (one for automate, one for the web interface and one for the delayed message)
+        if (result == -1) {
+            syslog(LOG_ERR, "Listen error : %s", strerror(errno));
+            return NULL;
+        }
+
+        sockadd_size = sizeof (struct sockaddr_in);
+        // Accept the incoming connection
+        client_socket = accept(server_socket, (struct sockaddr *) &client, (socklen_t*) & sockadd_size);
+        if (client_socket == -1) {
+            syslog(LOG_ERR, "Client socket error : %s", strerror(errno));
+            return NULL;
+        }
+        syslog(LOG_INFO, "Client connected : %s", inet_ntoa(client.sin_addr));
+
+        int read_size;
+        char message[MSG_SIZE]; // message
+        while (true) {
+            read_size = read(client_socket, message, sizeof (message));
+            if (read_size > 0) {
+                // Transfert message
+                this->transfer_message(message);
+                // Clear the message buffer
+                memset(message, 0, MSG_SIZE);
+            }
+            if (read_size == 0) {
+                syslog(LOG_INFO, "Client disconnected : %s", inet_ntoa(client.sin_addr));
+                close(client_socket);
+                this->detach(); // close this thread
+                this->wait_connection(); // wait new connection
+            }
+            if (read_size == -1) {
+                syslog(LOG_ERR, "Client message error : %s", strerror(errno));
+            }
+        }
+    }
+    return NULL;
+
+}
+
+void Network_manager::transfer_message(char* message) {
+    message_manager->analyse_message(message);
 }
 
 Network_manager::~Network_manager() {
-    syslog(LOG_ERR, "Deleting Network Manager");
-    closeConnection();
-    delete message_manager;
+    syslog(LOG_ERR, "Network closed");
 }
 

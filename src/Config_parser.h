@@ -1,7 +1,10 @@
 /*
 * Synsip, automated calling machine working with text to speech synthesis
-*
-* Copyright (C) 2014  Luis Domingues
+* 
+* Copyright (C) 2014  EIA-FR (https://eia-fr.ch/)
+* author: Fabien Yerly
+* 
+* Copyright (C) 2014-2015  Luis Domingues
 * 
 * This file is part of Synsip.
 * 
@@ -19,57 +22,20 @@
 * along with Synsip.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "queue.h"
-#include <stdlib.h>
+#pragma once
+#include "config.h"
+#include <string>
 
-void **my_array;
-int queue_size;
-int used_size;
-int next_put;
-int next_get;
+using namespace std;
 
-void init_queue(int size)
-{
-	queue_size = size;
-	next_put = 0;
-	next_get = 0;
-	used_size = 0;
-	my_array = malloc(sizeof(void*) * size);
-}
+class Config_parser {
+public:
+	Config_parser();
+	
+	//Return 0 if ok, -1 if error occured.
+	int parse_config(synsip_config& config, string config_file);
+	
+	~Config_parser();
+};
 
-void destroy_queue()
-{
-	free(my_array);
-}
-
-int is_full()
-{
-	if(used_size == queue_size){
-		return 1;
-	}
-	return 0;
-}
-
-int is_empty()
-{
-	if(used_size == 0){
-		return 1;
-	}
-	return 0;
-}
-
-void add_element(void* elm)
-{
-	used_size++;
-	my_array[next_put] = elm;
-	next_put = (next_put + 1) % queue_size;
-}
-
-void* remove_element()
-{
-	void* elm;
-	used_size--;
-	elm = my_array[next_get];
-	next_get = (next_get + 1) % queue_size;
-	return elm;
-}
+/* CONFIG_PARSER_H */
