@@ -23,6 +23,10 @@
 */
 #pragma once
 
+#define lang_fr 0
+#define lang_de 1
+#define lang_en 2
+
 #include "config.h"
 
 
@@ -31,7 +35,7 @@ public:
     Synthesis_manager();
     
     bool init(synsip_config* config);
-    int synthesired(char* annonce, int language);
+    int synthesired(const char* annonce, int language);
     
     virtual ~Synthesis_manager();
 private:

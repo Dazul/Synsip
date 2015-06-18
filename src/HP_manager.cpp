@@ -50,7 +50,6 @@ pjsua_call_id HP_manager::call(char* num) {
     pj_status_t status;
     pjsua_call_id call_id = -1;
     pj_str_t uri_arg;
-    //TODO constructe the number
     char num_uri[30];
 	memset(num_uri, 0, 30);
     strcat(num_uri, "sip:");
@@ -64,7 +63,6 @@ pjsua_call_id HP_manager::call(char* num) {
     status = pjsua_call_make_call(acc_id, &uri_arg, 0, NULL, NULL, &call_id);
 
     if (status != PJ_SUCCESS) {
-        // TODO lognaut
         char buffer[255];
         pj_str_t error = pjsip_strerror(status, buffer, 255);
         printf("HP %s, does not answer. %s\n", num, buffer);
@@ -91,7 +89,6 @@ int HP_manager::play_file(pjsua_call_id call_id, char* audfile) { //
         return -1;
     }
     pj_str_t file;
-    //TODO use config for path
     char audfile_full[255];
 	memset(audfile_full, 0, 255);
     strcat(audfile_full, config->script_path);

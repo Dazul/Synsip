@@ -33,6 +33,7 @@
 #include <arpa/nameser_compat.h>
 #include "Synthesis_manager.h"
 
+
 Synthesis_manager::Synthesis_manager() {
 }
 
@@ -47,7 +48,7 @@ bool Synthesis_manager::init(synsip_config* config) {
  * @param language 0 French, 1 German
  * @return -1 if error
  */
-int Synthesis_manager::synthesired(char* annonce, int language) {
+int Synthesis_manager::synthesired(const char* annonce, int language) {
     int fileName = rand() % 100 + 1;
     // text file
     char commandefile[sizeof (annonce) + 256];
@@ -58,10 +59,10 @@ int Synthesis_manager::synthesired(char* annonce, int language) {
     }
 
     char commandescript[256];
-    if (language == 0) {
+    if (language == lang_fr) {
         sprintf(commandescript, "%s/%s %d %s", config->script_path, config->scriptfr_name, fileName, config->script_path);
     }
-    else if (language = 1) {
+    else if (language = lang_de) {
         sprintf(commandescript, "%s/%s %d %s", config->script_path, config->scriptde_name, fileName, config->script_path);
     }
     else{
