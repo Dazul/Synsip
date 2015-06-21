@@ -126,7 +126,7 @@ bool Message_manager::generate_annonce(char message[]) {
     sprintf(receive_date, "%d.%d.%d", now->tm_mday, (now->tm_mon + 1), (now->tm_year + 1900)); // month start at 0
 
     string msg = message; // convert to string
-    const char* annonce[4]; // 0 number, 1 message, 2 language
+    const char* annonce[4]; // 0 number, 1 message lang 1, 2 mennage lang 2
 
     id = -1;
     printf("Time %s, date %s\n", receive_time, receive_date);
@@ -142,24 +142,12 @@ bool Message_manager::generate_annonce(char message[]) {
         annonce[i] = VecStr[i].c_str();
     }
 
-    // Generate the advertisement depending the type
-    // Check language
-    int language = -1; // No language
-    if (strcmp(annonce[2], "FR") == 0) {
-        language = lang_fr;
-    } else if (strcmp(annonce[2], "DE") == 0) {
-        language = lang_de;
-    } else {
-        syslog(LOG_ERR, "Language not know");
-        return false;
-    }
-
-    int fileName = synthesis_manager->synthesired(annonce[1], language);
+    int fileName = synthesis_manager->synthesired(annonce[1], annonce[2]);
     if (fileName == -1) {
         return false;
     }
 
-    syslog(LOG_INFO, "Message: %s, call %s", annonce[1], annonce[0]);
+    syslog(LOG_INFO, "Message: %s, call %s", annonce[1], annonce[2], annonce[0]);
     str_annonce strann;
     char audiofile[10];
     sprintf(audiofile, "%d.wav", fileName);

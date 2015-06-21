@@ -45,30 +45,27 @@ bool Synthesis_manager::init(synsip_config* config) {
 /**
  * 
  * @param annonce
- * @param language 0 French, 1 German
+ * @param annonce 1 French, annonce 2 German
  * @return -1 if error
  */
-int Synthesis_manager::synthesired(const char* annonce, int language) {
+int Synthesis_manager::synthesired(const char* annonce1, const char* annonce2) {
     int fileName = rand() % 100 + 1;
     // text file
-    char commandefile[sizeof (annonce) + 256];
-    sprintf(commandefile, "echo \"%s\" > %s/%d", annonce, config->script_path, fileName);
-    if (system(commandefile) == -1) {
+    char commandefile1[sizeof (annonce1) + 256];
+    char commandefile2[sizeof (annonce1) + 256];
+    sprintf(commandefile1, "echo \"%s\" > %s/%d.fr", annonce1, config->script_path, fileName);
+    sprintf(commandefile2, "echo \"%s\" > %s/%d.de", annonce2, config->script_path, fileName);
+    if (system(commandefile1) == -1) {
+        syslog(LOG_ERR, "Cannot create the annonce file, error cmd system : %s", strerror(errno));
+        return -1;
+    }
+    if (system(commandefile2) == -1) {
         syslog(LOG_ERR, "Cannot create the annonce file, error cmd system : %s", strerror(errno));
         return -1;
     }
 
     char commandescript[256];
-    if (language == lang_fr) {
-        sprintf(commandescript, "%s/%s %d %s", config->script_path, config->scriptfr_name, fileName, config->script_path);
-    }
-    else if (language = lang_de) {
-        sprintf(commandescript, "%s/%s %d %s", config->script_path, config->scriptde_name, fileName, config->script_path);
-    }
-    else{
-        syslog(LOG_ERR, "Cannot make synthesis script, no language");
-        return -1;
-    }
+    sprintf(commandescript, "%s/%s %d %s", config->script_path, config->script_name, fileName, config->script_path);
     
     if(system(commandescript) == -1){
         syslog(LOG_ERR, "Cannot make the audio file");

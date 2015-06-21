@@ -48,10 +48,8 @@ int Config_parser::parse_config(synsip_config& config, string config_file){
 			sin >> config.max_calls;
 		} else if (line.find("script_path") != -1){
 			sin >> config.script_path;
-		} else if (line.find("scriptfr_name") != -1){
-			sin >> config.scriptfr_name;
-		} else if (line.find("scriptde_name") != -1){
-			sin >> config.scriptde_name;
+		} else if (line.find("script_name") != -1){
+			sin >> config.script_name;
 		} else if (line.find("listen_port") != -1){
 			sin >> config.listen_port;
 		}

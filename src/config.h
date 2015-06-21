@@ -32,8 +32,7 @@ typedef struct {
     int sip_port; // The SIP port
     int max_calls; // The number of maximum call
     char script_path[30]; // The directories script
-    char scriptfr_name[30]; // The script's name to do French
-    char scriptde_name[30]; // The script's name to de German
+    char script_name[30]; // The script's name
     int listen_port; // The port to connect from the automate
 } synsip_config;
 
