@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###########################################################################
-# Copyright (C) 2014  Luis Domingues
+# Copyright (C) 2014-2015  Luis Domingues
 # 
 # This file is part of Synsip.
 # 
@@ -24,6 +24,9 @@
 #
 ###########################################################################
 
-espeak -a 20 -p 50 -s 120 -v mb/mb-fr4 "$(cat $2/$1)" --pho --phonout=$2/$1.pho 2> /dev/null
-mbrola /usr/share/mbrola/voices/fr4 $2/$1.pho $2/$1.voice.wav 2> /dev/null
-sox $2/intro.wav $2/$1.voice.wav $2/$1.wav 2> /dev/null
+espeak -a 20 -p 50 -s 100 -v mb/mb-fr4 "$(cat $2/$1.fr)" --pho --phonout=$2/$1.pho 2> /dev/null
+mbrola /usr/share/mbrola/voices/fr4 $2/$1.pho $2/$1.voicefr.wav 2> /dev/null
+espeak -a 20 -p 50 -s 100 -v mb/mb-de7 "$(cat $2/$1.de)" --pho --phonout=$2/$1.pho 2> /dev/null
+mbrola /usr/share/mbrola/voices/de7 $2/$1.pho $2/$1.voicede.wav 2> /dev/null
+sox $2/intro.wav $2/$1.voicefr.wav $2/$1.temp.wav 2> /dev/null
+sox $2/$1.temp.wav $2/$1.voicede.wav $2/$1.wav 2> /dev/null
