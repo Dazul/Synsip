@@ -38,6 +38,7 @@
 
 
 #include "Network_manager.h"
+#include "Files_manager.h"
 #include "config.h"
 #include "Message_manager.h"
 #include "Synthesis_manager.h"
@@ -50,13 +51,14 @@ using namespace std;
 Synthesis_manager *synthesis_manager;
 Call_manager *call_manager;
 Message_manager *message_manager;
+Files_manager *files_manager;
 Network_manager *network_manager;
 Network_manager *network_manager_local;
 Timeout_manager *timeout_manager;
 
 void sigHandler(int sig) {
     delete network_manager;
-    delete network_manager_local;
+    delete files_manager;
 }
 
 /**
@@ -109,6 +111,9 @@ int main(int argc, char** argv) {
 
     // Create the network manager from automate
     network_manager = new Network_manager(message_manager);
+    
+    //Create the filemanager
+    files_manager = new Files_manager(message_manager, config);
 
     if (!message_manager->init(config)) {
         syslog(LOG_ERR, "Cannot start message thread");
@@ -127,12 +132,22 @@ int main(int argc, char** argv) {
         syslog(LOG_ERR, "Cannot create network connection");
         endValue = EXIT_FAILURE;
     }
+    
+    if (!files_manager->start_read_reqs()) {
+		syslog(LOG_ERR, "Cannot read request files");
+        sleep(2); // Wait for the other process
+        delete files_manager;
+        syslog(LOG_ERR, "Cannot create files manager");
+        endValue = EXIT_FAILURE;
+    }
+    
     if (endValue == EXIT_FAILURE) {
         free(config);
         return endValue;
     }
     
     network_manager->join();
+    files_manager->join();
 
     syslog(LOG_INFO, "Program ended");
     free(config);

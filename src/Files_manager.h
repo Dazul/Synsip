@@ -1,9 +1,6 @@
 /*
 * Synsip, automated calling machine working with text to speech synthesis
 * 
-* Copyright (C) 2014  EIA-FR (https://eia-fr.ch/)
-* author: Fabien Yerly
-* 
 * Copyright (C) 2014-2015  Luis Domingues
 * 
 * This file is part of Synsip.
@@ -26,31 +23,22 @@
 
 #include "Thread.h"
 #include "config.h"
-#include <vector>
-#include <string>
+#include "Message_manager.h"
 
-#include "Synthesis_manager.h"
-#include "Call_manager.h"
-
-class Message_manager : public Thread {
+class Files_manager : public Thread {
 public:
-    Message_manager(Synthesis_manager *synthesis_manager, Call_manager *call_manager);
-    
-    bool init(synsip_config *config);
-    void analyse_message(const char *message);
-    
-    virtual ~Message_manager();
+    Files_manager(Message_manager *message_manager, synsip_config* config);
+    virtual ~Files_manager();
+	bool start_read_reqs();
+
 private:
     void *run();
-    bool generate_annonce(char *message);
-    synsip_config *config;
-    
-    Synthesis_manager *synthesis_manager;
-    Call_manager *call_manager;
+    void transfer_message(const char message[]);
+    synsip_config* config;
 
-    int id;
- 
+    char request_files_path[50];
+    
+    Message_manager *message_manager;
 };
 
-/* MESSAGE_MANAGER_H */
-
+/* FILES_MANAGER_H */

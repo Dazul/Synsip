@@ -34,6 +34,8 @@ typedef struct {
     char script_path[30]; // The directories script
     char script_name[30]; // The script's name
     int listen_port; // The port to connect from the automate
+    char request_path[50]; //Path to requests trought files.
+    int wait_read_files; //Time in secondes between the read of request files.
 } synsip_config;
 
 typedef struct {

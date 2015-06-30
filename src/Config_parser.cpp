@@ -52,6 +52,10 @@ int Config_parser::parse_config(synsip_config& config, string config_file){
 			sin >> config.script_name;
 		} else if (line.find("listen_port") != -1){
 			sin >> config.listen_port;
+		} else if (line.find("request_path") != -1){
+			sin >> config.request_path;
+		} else if (line.find("wait_read_files") != -1){
+			sin >> config.wait_read_files;
 		}
 	}
 }
