@@ -50,7 +50,9 @@ int Config_parser::parse_config(synsip_config& config, string config_file){
 			sin >> config.script_path;
 		} else if (line.find("script_name") != -1){
 			sin >> config.script_name;
-		} else if (line.find("listen_port") != -1){
+		} else if (line.find("input_path") != -1){
+			sin >> config.input_path;
+		}  else if (line.find("listen_port") != -1){
 			sin >> config.listen_port;
 		} else if (line.find("request_path") != -1){
 			sin >> config.request_path;
