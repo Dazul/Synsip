@@ -104,7 +104,7 @@ void* Files_manager::run() {
 	}
 }
 
-void Files_manager::transfer_message(const char* message) {
+void Files_manager::transfer_message(string message) {
 	message_manager->analyse_message(message);
 }
 

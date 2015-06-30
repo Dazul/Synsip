@@ -33,7 +33,7 @@ public:
 
 private:
     void *run();
-    void transfer_message(const char message[]);
+    void transfer_message(string message);
     synsip_config* config;
 
     char request_files_path[50];

@@ -39,7 +39,7 @@
 
 using namespace std;
 
-queue<char*> msg_queue;
+queue<string> msg_queue;
 mutex mymutex;
 condition_variable mycond;
 
@@ -61,14 +61,10 @@ bool Message_manager::init(synsip_config* config) {
     return true;
 }
 
-void Message_manager::analyse_message(const char *message) {
+void Message_manager::analyse_message(string message) {
     // convert to queue char
-    cout << "msg is " << message << endl;
-    char new_message[512];
-    sprintf(new_message, "%s", message);
-	cout << "msg is " << new_message << endl;
     unique_lock<mutex> mlock(mymutex);
-    msg_queue.push(new_message);
+    msg_queue.push(message);
     mlock.unlock();
     mycond.notify_one();
 }
@@ -81,7 +77,6 @@ void* Message_manager::run() {
             mycond.wait(mlock);
         }
         syslog(LOG_INFO, "Receive message");
-        cout << "msg is " << msg_queue.front() << endl;
         if (!generate_annonce(msg_queue.front())) {
             syslog(LOG_INFO, "No advertisement made");
         }
@@ -116,17 +111,15 @@ int Split(vector<string>& vecteur, string chaine, char separateur) {
  * Create the annonce with the received message
  * @param message
  */
-bool Message_manager::generate_annonce(char message[]) {
+bool Message_manager::generate_annonce(string msg) {
     // get current time
     time_t t = time(0);
     struct tm *now = localtime(&t);
-	cout << "msg is " << message << endl;
     char receive_time[10];
     sprintf(receive_time, "%d:%d:%d", now->tm_hour, now->tm_min, now->tm_sec);
     char receive_date[12];
     sprintf(receive_date, "%d.%d.%d", now->tm_mday, (now->tm_mon + 1), (now->tm_year + 1900)); // month start at 0
 
-    string msg = message; // convert to string
     const char* annonce[4]; // 0 number, 1 message lang 1, 2 message lang 2
 
     id = -1;

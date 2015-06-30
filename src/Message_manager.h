@@ -32,17 +32,19 @@
 #include "Synthesis_manager.h"
 #include "Call_manager.h"
 
+using namespace std;
+
 class Message_manager : public Thread {
 public:
     Message_manager(Synthesis_manager *synthesis_manager, Call_manager *call_manager);
     
     bool init(synsip_config *config);
-    void analyse_message(const char *message);
+    void analyse_message(string message);
     
     virtual ~Message_manager();
 private:
     void *run();
-    bool generate_annonce(char *message);
+    bool generate_annonce(string message);
     synsip_config *config;
     
     Synthesis_manager *synthesis_manager;
