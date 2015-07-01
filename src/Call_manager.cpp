@@ -127,58 +127,6 @@ void delete_file(char* file) {
     }
 }
 
-/**
- * 
- * @param call_id
- */
-void play_file_broadcast(pjsua_call_id call_id, int callback_status) {
-
-    int number = cid_number[call_id % MAX_SIZE];
-    mycall_info mci = call_mstate[number];
-
-    int active = true;
-    printf("Call media status change for call_id %d, nbr of other call_id : %d\n", call_id, mci.nbr_of_other_call_id);
-    // if all other call in broadcast are ready
-    for (int i = 0; i < mci.nbr_of_other_call_id; i++) {
-        printf("call id %d : %d\n", i, mci.other_call_id[i]);
-        mycall_info m;
-        m = call_mstate[cid_number[mci.other_call_id[i]]];
-        mycall_info new_m;
-        new_m = m;
-        int status = m.call_status;
-        printf("Call status : %d\n", status);
-        if (status != STAT_CONFIRME) {
-            printf("Wait other call\n");
-            active = false;
-        }
-        if (callback_status == STAT_DISCONNECTED) {
-            // remove call_id from other list
-            int w = 0;
-            for (int j = 0; j < m.nbr_of_other_call_id; j++) {
-                if (m.other_call_id[j] != call_id) {
-                    new_m.other_call_id[w] = m.other_call_id[j];
-                    w++;
-                }
-            }
-
-            new_m.nbr_of_other_call_id = m.nbr_of_other_call_id - 1;
-            call_mstate[cid_number[mci.other_call_id[i]]] = new_m;
-        }
-    }
-    if (active) {
-        printf("Make broadcast play file\n");
-        // play file for all broadcast call
-
-        for (int k = 0; k < mci.nbr_of_other_call_id; k++) {
-            call_mstate[cid_number[mci.other_call_id[k]]].hp_manager->play_audio_file(mci.other_call_id[k], call_mstate[cid_number[mci.other_call_id[k]]].audio_file);
-        }
-        if (callback_status != STAT_DISCONNECTED) {
-            mci.hp_manager->play_audio_file(call_id, mci.audio_file);
-        }
-
-    }
-}
-
 void change_call_stat(pjsua_call_id call_id, int status) {
     now = time(0);
     mtx_state_access.lock();
@@ -201,11 +149,7 @@ void change_call_stat(pjsua_call_id call_id, int status) {
             sem_post(&wait_max_calls);
             if (mci.call_status < STAT_CONFIRME || mci.call_status == STAT_TIMEOUT) {
                 char err[50];
-
                 syslog(LOG_INFO, "Cannot wait connection");
-                if (mci.broadast) {
-                    play_file_broadcast(call_id, status);
-                }
             }
             break;
     }
@@ -224,16 +168,10 @@ void change_media_state(pjsua_call_id call_id) {
     int number = cid_number[call_id % MAX_SIZE];
     mycall_info mci = call_mstate[number];
     mycall_info newmci = mci;
-    if (mci.broadast) {
-        // newmci.call_status = STAT_MEDIA_ACTIVE; // update status
-        play_file_broadcast(call_id, mci.call_status);
+    newmci.call_status = STAT_MEDIA_ACTIVE; // update status
+    newmci.timeout = now + TIMEOUT_CONF;
+    mci.hp_manager->play_audio_file(call_id, mci.audio_file);
 
-    } else {
-        newmci.call_status = STAT_MEDIA_ACTIVE; // update status
-        newmci.timeout = now + TIMEOUT_CONF;
-        mci.hp_manager->play_audio_file(call_id, mci.audio_file);
-
-    }
     call_mstate.at(number) = newmci;
     mtx_state_access.unlock();
 }
@@ -294,7 +232,9 @@ bool Call_manager::wait() {
 }
 
 bool Call_manager::make_call(str_annonce annonce) {
+	syslog(LOG_INFO, "annonce to push");
     unique_lock<mutex> mlock(mtx_ann_queue);
+    syslog(LOG_INFO, "annonce pushed");
     annonce_queue.push(annonce);
     mlock.unlock();
     cond_new_annonce.notify_one();
@@ -404,7 +344,9 @@ void* Call_manager::run() {
          */
         while (true) {
             // TODO Check if account registered
+            syslog(LOG_INFO, "Before Sem.");
             sem_wait(&wait_max_calls);
+            syslog(LOG_INFO, "After Sem.");
             sleep(1);
             unique_lock<mutex> mlock(mtx_ann_queue);
             while (annonce_queue.empty()) {
@@ -438,7 +380,6 @@ void Call_manager::manage_individual_call(str_annonce annonce, pjsua_acc_id acc_
     mci.hp_manager = new HP_manager(acc_id, this->config);
     strcpy(mci.audio_file, annonce.audio_file);
     mci.bd_id = annonce.bd_id;
-    mci.broadast = false;
     mci.call_status = STAT_MAKECALL;
     mci.original_annonce = annonce;
     mci.timeout = now + TIMEOUT;
@@ -461,7 +402,7 @@ void Call_manager::manage_individual_call(str_annonce annonce, pjsua_acc_id acc_
     } else {
         printf("Number already in call_mstate %d\n", n);
         mycall_info old_mci = call_mstate[n];
-
+		delete old_mci.hp_manager;
         if (old_mci.call_status == STAT_DISPO) {
             pjsua_call_id call_id = mci.hp_manager->call(mci.number);
             if (call_id == -1) {
@@ -508,6 +449,7 @@ bool Call_manager::end_a_call(pjsua_call_id call_id) {
     mci.call_status = STAT_TIMEOUT;
     call_mstate.at(number) = mci;
     mci.hp_manager->hangup_hp(call_id);
+    sem_post(&wait_max_calls);
     return true;
 }
 

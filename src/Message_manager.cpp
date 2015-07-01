@@ -141,7 +141,7 @@ bool Message_manager::generate_annonce(string msg) {
         return false;
     }
 
-    syslog(LOG_INFO, "Message: %s, call %s", annonce[1], annonce[2], annonce[0]);
+    syslog(LOG_INFO, "Message: %s:%s, call %s", annonce[1], annonce[2], annonce[0]);
     str_annonce strann;
     char audiofile[10];
     sprintf(audiofile, "%d.wav", fileName);

@@ -31,15 +31,11 @@
 #include "Call_manager.h"
 #include "config.h"
 
-sem_t wait_file_end;
-sem_t wait_to_play_file;
 
 HP_manager::HP_manager(pjsua_acc_id acc_id, synsip_config *config) {
 	this->config = config;
     this->acc_id = acc_id;
 
-    sem_init(&wait_file_end, 0, 0);
-    sem_init(&wait_to_play_file, 0, 0);
     printf("HP_manager create\n");
 
 }

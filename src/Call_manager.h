@@ -49,7 +49,6 @@ struct mycall_info{
     pjsua_call_id call_id;
     int call_status;
     char audio_file[10];
-    bool broadast;
     int bd_id;
     char number[30];
     pjsua_call_id other_call_id[15]; // Max broadcast call
