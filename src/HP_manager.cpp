@@ -141,9 +141,10 @@ bool HP_manager::hangup_hp(pjsua_call_id call_id) {
     pj_thread_desc desc;
     if (!pj_thread_is_registered()) {
         pj_thread_register(NULL, desc, &thread);
+        syslog(LOG_ERR, "Registering Timeout thread.");
     }
     pj_status_t status = pjsua_call_hangup(call_id, 0, NULL, NULL);
-    pj_thread_destroy(thread);
+    //pj_thread_destroy(thread);
     if (status != PJ_SUCCESS) {
         syslog(LOG_ERR, "Cannot hangup call %d", call_id);
         return false;

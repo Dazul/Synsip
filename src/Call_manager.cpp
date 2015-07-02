@@ -232,9 +232,7 @@ bool Call_manager::wait() {
 }
 
 bool Call_manager::make_call(str_annonce annonce) {
-	syslog(LOG_INFO, "annonce to push");
     unique_lock<mutex> mlock(mtx_ann_queue);
-    syslog(LOG_INFO, "annonce pushed");
     annonce_queue.push(annonce);
     mlock.unlock();
     cond_new_annonce.notify_one();
@@ -344,9 +342,7 @@ void* Call_manager::run() {
          */
         while (true) {
             // TODO Check if account registered
-            syslog(LOG_INFO, "Before Sem.");
             sem_wait(&wait_max_calls);
-            syslog(LOG_INFO, "After Sem.");
             sleep(1);
             unique_lock<mutex> mlock(mtx_ann_queue);
             while (annonce_queue.empty()) {
@@ -357,7 +353,7 @@ void* Call_manager::run() {
             annonce_queue.pop();
             mlock.unlock();
             
-            pjsua_acc_set_registration(acc_id, 1); // verify if account is register
+            //pjsua_acc_set_registration(acc_id, 1); // verify if account is register
 
             manage_individual_call(annonce, acc_id);
         }
@@ -374,6 +370,7 @@ void* Call_manager::run() {
  */
 void Call_manager::manage_individual_call(str_annonce annonce, pjsua_acc_id acc_id) {
 
+	syslog(LOG_INFO, "Making new call");
     now = time(0);
     char *number = annonce.phone_number;
     mycall_info mci;
@@ -389,6 +386,7 @@ void Call_manager::manage_individual_call(str_annonce annonce, pjsua_acc_id acc_
     int n = atoi(number);
     mtx_state_access.lock();
     if (call_mstate.find(n) == call_mstate.end()) {
+    	syslog(LOG_INFO, "Number not in call_mstate %d\n", n);
         printf("Number not in call_mstate %d\n", n);
         pjsua_call_id call_id = mci.hp_manager->call(mci.number);
         if (call_id == -1) {
@@ -400,6 +398,7 @@ void Call_manager::manage_individual_call(str_annonce annonce, pjsua_acc_id acc_
             cid_number[call_id % MAX_SIZE] = n;
         }
     } else {
+    	syslog(LOG_INFO, "Number already in call_mstate %d\n", n);
         printf("Number already in call_mstate %d\n", n);
         mycall_info old_mci = call_mstate[n];
 		delete old_mci.hp_manager;
@@ -425,7 +424,7 @@ void Call_manager::timeout(int t_now) {
     for (auto& x : call_mstate) {
         if (x.second.call_status == STAT_MAKECALL || x.second.call_status == STAT_CALLING || x.second.call_status == STAT_EARLY || x.second.call_status == STAT_CONFIRME || x.second.call_status == STAT_MEDIA_ACTIVE) { // timeout
             if (x.second.timeout <= t_now) {
-                printf("Timeout %d, %d\n", x.second.timeout, t_now);
+                syslog(LOG_INFO, "Timeout %d, %d\n", x.second.timeout, t_now);
                 if (end_a_call(x.second.call_id)) {
                     printf("Hangup timeout\n");
                 } else {
@@ -443,13 +442,13 @@ void Call_manager::timeout(int t_now) {
  * @param call_id
  */
 bool Call_manager::end_a_call(pjsua_call_id call_id) {
-	printf("Ending call\n");
+	syslog(LOG_INFO, "Ending call\n");
     int number = cid_number[call_id % MAX_SIZE];
     mycall_info mci = call_mstate[number];
     mci.call_status = STAT_TIMEOUT;
     call_mstate.at(number) = mci;
     mci.hp_manager->hangup_hp(call_id);
-    sem_post(&wait_max_calls);
+    //sem_post(&wait_max_calls);
     return true;
 }
 

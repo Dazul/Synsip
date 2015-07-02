@@ -76,7 +76,6 @@ void* Message_manager::run() {
         while (msg_queue.empty()) {
             mycond.wait(mlock);
         }
-        syslog(LOG_INFO, "Receive message");
         if (!generate_annonce(msg_queue.front())) {
             syslog(LOG_INFO, "No advertisement made");
         }
@@ -128,8 +127,8 @@ bool Message_manager::generate_annonce(string msg) {
     vector<string> VecStr;
     int nbTabl = Split(VecStr, msg, '|'); // split the annonce
     if (nbTabl != 4) { // Message Error
-        syslog(LOG_ERR, "Cannot read message : syntax error");
-        id = atoi(VecStr[3].c_str()); // Get the id
+        syslog(LOG_ERR, "Cannot read message %s : syntax error", msg.c_str());
+        return false;
     }
 
     for (int i = 0; i < 3; ++i) {
