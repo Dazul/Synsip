@@ -144,9 +144,10 @@ void change_call_stat(pjsua_call_id call_id, int status) {
             break;
         case STAT_DISCONNECTED:
             newmci.call_status = STAT_DISPO;
-            // check if broadcast
             printf("Status befor disconnected : %d\n", mci.call_status);
             sem_post(&wait_max_calls);
+            int semVal;
+        	sem_getvalue(&wait_max_calls, &semVal);
             if (mci.call_status < STAT_CONFIRME || mci.call_status == STAT_TIMEOUT) {
                 char err[50];
                 syslog(LOG_INFO, "Cannot wait connection");
@@ -163,7 +164,6 @@ void change_call_stat(pjsua_call_id call_id, int status) {
  */
 void change_media_state(pjsua_call_id call_id) {
     now = time(0);
-
     mtx_state_access.lock();
     int number = cid_number[call_id % MAX_SIZE];
     mycall_info mci = call_mstate[number];
@@ -341,8 +341,6 @@ void* Call_manager::run() {
          * @return 
          */
         while (true) {
-            // TODO Check if account registered
-            sem_wait(&wait_max_calls);
             sleep(1);
             unique_lock<mutex> mlock(mtx_ann_queue);
             while (annonce_queue.empty()) {
@@ -353,7 +351,11 @@ void* Call_manager::run() {
             annonce_queue.pop();
             mlock.unlock();
             
-            //pjsua_acc_set_registration(acc_id, 1); // verify if account is register
+            printf("********************Check Registration\n");
+            if(pjsua_acc_is_valid(acc_id) == 0){
+            	pjsua_acc_set_registration(acc_id, 1); // verify if account is register
+            }
+            printf("********************Registration checked\n");
 
             manage_individual_call(annonce, acc_id);
         }

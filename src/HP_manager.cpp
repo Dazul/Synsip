@@ -44,6 +44,7 @@ pjsua_call_id HP_manager::call(char* num) {
     printf("HP_manager call %s\n", num);
 
     pj_status_t status;
+    pjsua_call_setting settings;
     pjsua_call_id call_id = -1;
     pj_str_t uri_arg;
     char num_uri[30];
@@ -54,9 +55,14 @@ pjsua_call_id HP_manager::call(char* num) {
     strcat(num_uri, config->registrar);
     uri_arg.ptr = num_uri;
     uri_arg.slen = strlen(num_uri);
+    
+    pjsua_call_setting_default(&settings);
+    
     // make the call
-
-    status = pjsua_call_make_call(acc_id, &uri_arg, 0, NULL, NULL, &call_id);
+	printf("********************Making PJSIP call\n");
+    status = pjsua_call_make_call(acc_id, &uri_arg, &settings, NULL, NULL, &call_id);
+    
+    printf("********************PJSIP call made\n");
 
     if (status != PJ_SUCCESS) {
         char buffer[255];
