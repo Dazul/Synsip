@@ -341,6 +341,7 @@ void* Call_manager::run() {
          * @return 
          */
         while (true) {
+            sem_wait(&wait_max_calls);
             sleep(1);
             unique_lock<mutex> mlock(mtx_ann_queue);
             while (annonce_queue.empty()) {
@@ -351,11 +352,9 @@ void* Call_manager::run() {
             annonce_queue.pop();
             mlock.unlock();
             
-            printf("********************Check Registration\n");
             if(pjsua_acc_is_valid(acc_id) == 0){
             	pjsua_acc_set_registration(acc_id, 1); // verify if account is register
             }
-            printf("********************Registration checked\n");
 
             manage_individual_call(annonce, acc_id);
         }
