@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
     parser.parse_config(*config, argv[1]);
 
 
-    syslog(LOG_INFO, "*** New instanace starting");
+    syslog(LOG_INFO, "*** New instance starting");
 
     // Create the synthesis manager
     synthesis_manager = new Synthesis_manager();

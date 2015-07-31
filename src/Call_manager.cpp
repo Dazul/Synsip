@@ -45,7 +45,7 @@
 #define TIMEOUT 15 // 15 sec. to wait response
 #define TIMEOUT_CONF 50 // 45 sec. to play audio file
 
-#define LOG_LEVEL 10
+#define LOG_LEVEL 0
 #define MAX_SIM_CALL 4
 #define MAX_SIZE 255
 
