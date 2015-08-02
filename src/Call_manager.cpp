@@ -115,7 +115,7 @@ static void on_incoming_call(pjsua_acc_id acc_id, pjsua_call_id call_id, pjsip_r
 
     /*answer*/
     pjsua_call_answer(call_id, 603, NULL, NULL); // reject incoming call (code 603)
-    syslog(LOG_INFO, "Try to call this server form %s", ci.remote_contact);
+    syslog(LOG_INFO, "Try to call this server form %s", ci.remote_contact.ptr);
 }
 
 void delete_file(char* file) {
