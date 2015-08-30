@@ -23,7 +23,7 @@
 */
 
 #include "Call_manager.h"
-
+#include "freeze_monitor.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -334,7 +334,7 @@ void* Call_manager::run() {
         syslog(LOG_INFO, "Pjsua account create, account id : %d\n", acc_id);
 
         sleep(1); // wait account registered
-
+		Freeze_Monitor fm;
 
         /**
          * Do really the annonce
@@ -351,12 +351,14 @@ void* Call_manager::run() {
             str_annonce annonce = annonce_queue.front();
             annonce_queue.pop();
             mlock.unlock();
-            
+            fm = new Freeze_Monitor();
+            fm->start();
             if(pjsua_acc_is_valid(acc_id) == 0){
             	pjsua_acc_set_registration(acc_id, 1); // verify if account is register
             }
 
             manage_individual_call(annonce, acc_id);
+            delete fm;
         }
     }
 
