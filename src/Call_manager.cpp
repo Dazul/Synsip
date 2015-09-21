@@ -334,7 +334,7 @@ void* Call_manager::run() {
         syslog(LOG_INFO, "Pjsua account create, account id : %d\n", acc_id);
 
         sleep(1); // wait account registered
-		Freeze_Monitor fm;
+		Freeze_Monitor* fm;
 
         /**
          * Do really the annonce
