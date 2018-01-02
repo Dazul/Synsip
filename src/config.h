@@ -30,7 +30,7 @@ typedef struct {
     char user[30]; // The username
     char password[50]; // The userpassword
     int sip_port; // The SIP port
-    int max_calls; // The number of maximum call
+    unsigned int max_calls; // The number of maximum call
     char script_path[30]; // The directories script
     char script_name[30]; // The script's name
     char input_path[30]; // The input files dir path
