@@ -153,6 +153,8 @@ void change_call_stat(pjsua_call_id call_id, int status) {
                 syslog(LOG_INFO, "Cannot wait connection");
             }
             break;
+        default:
+            syslog(LOG_INFO, "Default change_call_status");
     }
     call_mstate.at(number) = newmci;
     mtx_state_access.unlock();
