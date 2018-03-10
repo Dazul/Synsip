@@ -389,7 +389,9 @@ void Call_manager::manage_individual_call(str_annonce annonce, pjsua_acc_id acc_
 
     // if no state exist for this number
     int n = atoi(number);
+    syslog(LOG_INFO, "############ Getting the log");
     mtx_state_access.lock();
+    syslog(LOG_INFO, "############ Got the log ");
     if (call_mstate.find(n) == call_mstate.end()) {
     	syslog(LOG_INFO, "Number not in call_mstate %d\n", n);
         printf("Number not in call_mstate %d\n", n);
@@ -421,6 +423,7 @@ void Call_manager::manage_individual_call(str_annonce annonce, pjsua_acc_id acc_
             syslog(LOG_INFO, "Error HP, STATE is not dispo.");
         }
     }
+    syslog(LOG_INFO, "Released the Lock");
     mtx_state_access.unlock();
 }
 

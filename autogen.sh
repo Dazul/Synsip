@@ -2,6 +2,6 @@
 echo 'aclocal'
 aclocal
 echo 'autoconf'
-autoconf
+autoreconf -f
 echo 'automake'
 automake
